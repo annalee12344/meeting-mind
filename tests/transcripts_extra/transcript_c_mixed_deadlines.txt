@@ -1,0 +1,25 @@
+[10:00] Ken: Hello team, cuộc họp kick-off dự án Data Migration sang Snowflake bắt đầu nhé.
+[10:01] Sarah: Hi Ken, I have prepared the initial schema mapping document in Google Drive.
+[10:02] Đức: Em đã kiểm tra dung lượng data hiện tại trên PostgreSQL cũ, tổng cộng khoảng 2.4 Terabytes.
+[10:03] Ken: Mục tiêu hôm nay là chốt migration strategy và phân chia timeline cho các deliverable chính.
+[10:04] Sarah: We have two options: either big-bang cutover over a weekend, or dual-write pipeline using Kafka CDC for two weeks.
+[10:05] Đức: Em đề xuất big-bang cutover vì hệ thống báo cáo nội bộ có thể chấp nhận bảo trì 8 tiếng vào Chủ nhật.
+[10:06] Sarah: I disagree with the big-bang approach. If any table fails integrity check, rollback will be extremely painful and downtime could spill into Monday business hours.
+[10:07] Ken: Sarah nói đúng. Hệ thống tài chính không thể gián đoạn trong giờ làm việc.
+[10:08] Ken: Chúng ta chính thức chốt: We choose the dual-write pipeline approach with Kafka CDC to guarantee zero-downtime migration.
+[10:09] Đức: Vâng, em thống nhất theo quyết định dual-write này.
+[10:10] Ken: Bây giờ về deadline và phân công.
+[10:11] Sarah: I will configure the Debezium Kafka connector and write the initial ingestion test scripts.
+[10:12] Ken: Excellent. Sarah, please complete the connector setup before next Monday.
+[10:13] Sarah: Confirmed, I will deliver the Debezium setup before next Monday at 10 AM.
+[10:14] Ken: Còn Đức, em phụ trách viết script đối soát checksum dữ liệu giữa PostgreSQL và Snowflake.
+[10:15] Đức: Em nhận nhiệm vụ này. Em sẽ hoàn thành script kiểm tra dữ liệu trước 17h thứ Sáu tuần này.
+[10:16] Ken: Rất tốt. Cần kiểm tra kỹ cả các trường timestamp có múi giờ UTC nhé.
+[10:17] Đức: Về hạ tầng: tài khoản AWS của team Data hiện tại chưa được whitelist dải IP để kết nối trực tiếp vào Snowflake cluster.
+[10:18] Sarah: Yes, that is a blocking issue because network security policies require VPC peering approval.
+[10:19] Ken: Rào cản này anh sẽ gửi ticket ưu tiên cao lên SecOps team trong ngày hôm nay để họ mở kết nối trong vòng 48 giờ tới.
+[10:20] Sarah: One unresolved topic: how long do we keep the legacy PostgreSQL database after the switch?
+[10:21] Đức: Bên kế toán muốn giữ 6 tháng để đối chiếu báo cáo tài chính năm cũ, nhưng chi phí server sẽ tốn thêm 800 USD mỗi tháng.
+[10:22] Ken: Chúng ta chưa quyết định thời gian lưu trữ hôm nay. Đức hãy làm bảng so sánh chi phí giữa giữ live database và backup sang S3 Glacier trước cuối tháng này.
+[10:23] Đức: Rõ rồi anh, em sẽ gửi bảng phân tích chi phí vào cuối tháng.
+[10:24] Ken: Cảm ơn mọi người. We are well-aligned. Let's make this migration a success!

@@ -1,0 +1,19 @@
+[09:00] Alice: Welcome everyone to our weekly frontend sync.
+[09:01] Bob: Hi Alice. I reviewed the performance audit from yesterday.
+[09:02] Alice: Great. We need to decide on migrating from Webpack to Vite for the customer portal.
+[09:03] Charlie: I ran a proof of concept with Vite 6. Build times dropped from 45 seconds to 3.8 seconds.
+[09:04] Bob: What about backward compatibility with our legacy Sass mixins?
+[09:05] Charlie: They work seamlessly with the modern compiler plugin.
+[09:06] Alice: Excellent. Let's make the call: we officially approve migrating the customer portal to Vite.
+[09:07] Bob: Agreed. I will handle the CI/CD pipeline adjustments by Friday afternoon.
+[09:08] Alice: Perfect, Bob takes the CI/CD update. Charlie, can you write the developer documentation?
+[09:09] Charlie: Yes, I accept that task. I will draft the Vite migration guide and share it before next Tuesday.
+[09:10] Bob: One potential blocker: our staging environment credentials expire tomorrow morning.
+[09:11] Alice: Thanks for raising that. Charlie, please submit an access renewal ticket to DevOps today.
+[09:12] Charlie: Will do right after this sync.
+[09:13] Bob: Regarding the end-to-end testing suite: should we switch from Cypress to Playwright?
+[09:14] Charlie: Playwright is much faster, but we have over 120 existing test specs in Cypress.
+[09:15] Bob: Converting them might take two whole sprints.
+[09:16] Alice: Let's table the Playwright discussion for now; this remains an open question for next quarter.
+[09:17] Bob: Understood. Let's revisit in Q1 planning.
+[09:18] Alice: Sounds like a plan. Thank you all, let's get to work!

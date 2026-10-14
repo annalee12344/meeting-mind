@@ -1,0 +1,81 @@
+[08:30] Quang: Xin chào tất cả các anh chị em, chào mừng đến với buổi họp định hướng kỹ thuật và kế hoạch phát triển Q4 của công ty.
+[08:31] Hương: Chào anh Quang, chào cả team. Hôm nay chúng ta có đầy đủ đại diện các nhóm Backend, Frontend, QA, DevOps và Product.
+[08:32] Tuấn: Chào mọi người, team Backend đã sẵn sàng báo cáo hiện trạng.
+[08:33] Lan: Chào anh Quang, team Frontend cũng đã chuẩn bị các đề xuất về trải nghiệm người dùng mới.
+[08:34] Bình: Bên QA cũng đã tổng hợp báo cáo kiểm thử và các lỗi tồn đọng từ phiên bản trước.
+[08:35] Khoa: DevOps team có mặt đầy đủ, sẵn sàng thảo luận về hạ tầng cloud và ngân sách AWS.
+[08:36] Quang: Rất tốt. Hôm nay chúng ta sẽ đi qua 5 chủ đề chính: Một là nâng cấp kiến trúc microservices. Hai là chuẩn hóa công nghệ frontend. Ba là tự động hóa quy trình kiểm thử QA. Bốn là tối ưu chi phí hạ tầng cloud. Và năm là kế hoạch bảo mật dữ liệu khách hàng theo tiêu chuẩn ISO 27001.
+[08:37] Quang: Chúng ta bắt đầu với chủ đề đầu tiên: Kiến trúc hệ thống Backend. Tuấn hãy trình bày phương án.
+[08:38] Tuấn: Về Backend, hiện tại khối dịch vụ xử lý đơn hàng (Order Service) và khối quản lý kho (Inventory Service) vẫn đang dùng chung một cơ sở dữ liệu MySQL nguyên khối (monolithic database).
+[08:39] Tuấn: Khi lượng truy cập tăng vọt trong các đợt flash sale, các truy vấn khóa bảng (table lock) của kho hàng khiến việc đặt hàng bị nghẽn nghiêm trọng.
+[08:40] Tuấn: Em đề xuất tách hẳn cơ sở dữ liệu của Order và Inventory thành hai database độc lập, sử dụng PostgreSQL và đồng bộ dữ liệu qua Kafka event stream.
+[08:41] Hương: Nếu tách database như vậy, vấn đề tính toàn vẹn dữ liệu (data consistency) giữa đơn hàng và số lượng tồn kho sẽ được giải quyết thế nào?
+[08:42] Tuấn: Chúng ta sẽ áp dụng mẫu thiết kế Saga pattern kết hợp với cơ chế outbox pattern để đảm bảo tính nhất quán cuối cùng (eventual consistency).
+[08:43] Khoa: Tách database sẽ yêu cầu cấu hình thêm cụm Kafka cluster có tính sẵn sàng cao (High Availability). Chi phí hạ tầng sẽ tăng khoảng 15%.
+[08:44] Quang: Việc đảm bảo trải nghiệm khách hàng không bị nghẽn mạng trong mùa mua sắm cuối năm là ưu tiên cao nhất của công ty.
+[08:45] Quang: Do đó, tôi chính thức phê duyệt quyết định: Tách hoàn toàn cơ sở dữ liệu của Order Service và Inventory Service, sử dụng Saga pattern trên Kafka để đồng bộ.
+[08:46] Tuấn: Vâng, em ghi nhận quyết định này. Em sẽ dẫn dắt nhóm Backend triển khai.
+[08:47] Quang: Về mặt phân công cho quyết định này: Tuấn chịu trách nhiệm viết tài liệu thiết kế kiến trúc chi tiết (Architecture Design Document). Thời hạn hoàn thành là trước thứ Sáu tuần sau.
+[08:48] Tuấn: Vâng, em nhận việc này. Em sẽ hoàn thành tài liệu trước 18h ngày 24/10/2026.
+[08:49] Quang: Lan, em có thể bố trí nhân sự Frontend để phối hợp thay đổi API đơn hàng mới không?
+[08:50] Lan: Dạ được, em sẽ phân công bạn Nam hỗ trợ kết nối với API mới sau khi Tuấn hoàn thành tài liệu thiết kế.
+[08:51] Quang: Chuyển sang chủ đề thứ hai: Chuẩn hóa công nghệ Frontend. Lan hãy chia sẻ.
+[08:52] Lan: Hiện tại ứng dụng web của chúng ta đang tồn tại song song cả Vue 2 cũ và React 18 mới. Điều này khiến các lập trình viên gặp khó khăn khi tái sử dụng các component giao diện.
+[08:53] Lan: Đội Frontend đề xuất loại bỏ hoàn toàn mã nguồn Vue 2 cũ và chuyển đổi 100% các trang còn lại sang React 19 kết hợp cùng Tailwind CSS v4.
+[08:54] Hương: Quá trình chuyển đổi toàn bộ mã nguồn Vue cũ dự kiến sẽ mất bao nhiêu thời gian?
+[08:55] Lan: Nếu tập trung 3 bạn lập trình viên trong 4 tuần, chúng em sẽ hoàn thành trước đợt Black Friday.
+[08:56] Tuấn: Liệu việc nâng cấp lên React 19 có gây xung đột với thư viện biểu đồ hiện tại không?
+[08:57] Lan: Em đã kiểm tra bản thử nghiệm với thư viện Recharts mới nhất, mọi biểu đồ doanh thu và thống kê đều tương thích hoàn toàn.
+[08:58] Quang: Quyết định được thông qua: Đồng ý chuyển đổi toàn bộ các module còn lại từ Vue 2 sang React 19 và Tailwind v4.
+[08:59] Lan: Cảm ơn anh Quang. Em sẽ lập kế hoạch phân chia từng module cụ thể và gửi cho anh trước 17h thứ Tư tuần này.
+[09:00] Quang: Được rồi, Lan nhớ ghi chú rõ ràng các mốc kiểm thử bàn giao cho đội QA.
+[09:01] Quang: Bây giờ đến lượt đội QA: Bình hãy trình bày về quy trình kiểm thử tự động.
+[09:02] Bình: Báo cáo anh Quang và cả team, tỷ lệ kiểm thử thủ công (manual testing) của chúng ta hiện nay vẫn chiếm tới 70%.
+[09:03] Bình: Mỗi lần release phiên bản mới, đội QA phải mất 2 ngày làm việc liên tục để chạy kiểm thử hồi quy (regression test).
+[09:04] Bình: Đội QA đề xuất xây dựng bộ kịch bản tự động hóa kiểm thử End-to-End bằng framework Playwright, tích hợp trực tiếp vào pipeline CI/CD của GitHub Actions.
+[09:05] Khoa: Việc chạy 200 kịch bản Playwright trên GitHub Actions runners có thể làm tăng thời gian build pipeline từ 10 phút lên 45 phút.
+[09:06] Bình: Chúng em sẽ cấu hình chạy song song (parallel execution) trên 4 workers, thời gian tổng cộng chỉ mất khoảng 12 phút.
+[09:07] Quang: Ý tưởng này rất xuất sắc. Quyết định: Phê duyệt áp dụng Playwright cho toàn bộ kịch bản kiểm thử E2E tự động của hệ thống.
+[09:08] Bình: Vâng, em sẽ trực tiếp phụ trách dự án này. Em cam kết xây dựng xong 50 kịch bản cốt lõi đầu tiên trước ngày 15/11/2026.
+[09:09] Quang: Ghi nhận nhiệm vụ của Bình: Xây dựng 50 kịch bản Playwright E2E trước 15/11/2026.
+[09:10] Quang: Chúng ta chuyển sang chủ đề thứ tư: Hạ tầng cloud và tối ưu chi phí. Khoa hãy báo cáo.
+[09:11] Khoa: Thưa các anh chị, chi phí hóa đơn AWS tháng vừa qua đã vượt ngân sách dự toán 25%, chủ yếu do các cụm cơ sở dữ liệu RDS chạy cấu hình quá cao và lượng log lưu trữ trên CloudWatch không được dọn dẹp.
+[09:12] Khoa: Đội DevOps đề xuất hai việc: Thứ nhất là áp dụng chính sách Reserved Instances 1 năm cho các cụm máy chủ cố định. Thứ hai là thiết lập vòng đời lưu trữ log: log trên 30 ngày sẽ tự động chuyển sang S3 Glacier.
+[09:13] Tuấn: Chuyển log sang S3 Glacier có ảnh hưởng đến việc truy vết lỗi khi khách hàng khiếu nại không?
+[09:14] Khoa: Không ảnh hưởng, vì 99% các khiếu nại phát sinh trong vòng 7 ngày đầu. Nếu cần tra cứu log cũ hơn 30 ngày, chúng ta chỉ mất vài phút để giải nén từ Glacier.
+[09:15] Quang: Rất hợp lý. Tôi quyết định: Phê duyệt phương án mua Reserved Instances 1 năm và chuyển log quá hạn 30 ngày sang S3 Glacier để tiết kiệm chi phí.
+[09:16] Khoa: Em sẽ làm thủ tục kích hoạt Reserved Instances và thiết lập chính sách vòng đời log trước thứ Sáu tuần này.
+[09:17] Quang: Ghi nhận công việc của Khoa: Hoàn tất cấu hình Reserved Instances và lưu trữ log S3 trước 17h ngày 17/10/2026.
+[09:18] Quang: Bây giờ đến chủ đề thứ năm: Vấn đề bảo mật và chứng chỉ ISO 27001.
+[09:19] Hương: Bên đơn vị kiểm toán bảo mật độc lập đã gửi danh sách các điểm yếu cần khắc phục trước kỳ đánh giá vào tháng 12 tới.
+[09:20] Hương: Trong đó có hai điểm nghiêm trọng: Một là các biến môi trường nhạy cảm như API key và database password vẫn đang được lưu trữ dưới dạng plain text trong tệp cấu hình. Hai là chúng ta chưa có cơ chế xác thực hai yếu tố (2FA) bắt buộc đối với tài khoản quản trị CMS nội bộ.
+[09:21] Tuấn: Về việc lưu trữ mật khẩu, em đề xuất chuyển toàn bộ secret sang dịch vụ AWS Secrets Manager hoặc HashiCorp Vault.
+[09:22] Lan: Còn về xác thực 2FA cho CMS, đội Frontend có thể tích hợp mã OTP qua ứng dụng Google Authenticator trong vòng 1 tuần.
+[09:23] Quang: Quyết định: Yêu cầu bắt buộc toàn bộ hệ thống phải chuyển sang AWS Secrets Manager và bắt buộc xác thực 2FA bằng Google Authenticator cho toàn bộ tài khoản nội bộ.
+[09:24] Tuấn: Em nhận trách nhiệm chuyển đổi secret sang AWS Secrets Manager trước ngày 30/10/2026.
+[09:25] Lan: Em nhận trách nhiệm hoàn thành tính năng xác thực 2FA trên trang CMS nội bộ trước ngày 28/10/2026.
+[09:26] Quang: Rất tốt. Còn các vấn đề rào cản hoặc khúc mắc nào đang tồn tại không?
+[09:27] Khoa: Em có một rào cản kỹ thuật khẩn cấp: Hiện tại tài khoản root AWS của công ty chỉ có một mình anh Giám đốc công nghệ cũ nắm giữ khóa bảo mật vật lý (YubiKey), chúng em không có quyền nâng cấp hạn mức quota máy chủ.
+[09:28] Tuấn: Đây là một blocker nghiêm trọng vì nếu không có quyền root, chúng ta không thể mở thêm dải IP kết nối VPN với các ngân hàng đối tác.
+[09:29] Quang: Tôi ghi nhận đây là vấn đề nghiêm trọng. Tôi sẽ trực tiếp liên hệ với Hội đồng quản trị và CTO vào chiều nay để thực hiện thủ tục chuyển giao quyền sở hữu tài khoản AWS cho Khoa.
+[09:30] Bình: Em cũng có một rào cản từ phía QA: Môi trường Staging hiện tại dữ liệu bị sai lệch nhiều so với Production, khiến các kịch bản kiểm thử thanh toán hay bị lỗi giả.
+[09:31] Tuấn: Em sẽ tạo một bản sao dữ liệu đã được làm sạch thông tin cá nhân (anonymized data) từ Production sang Staging để phục vụ đội QA.
+[09:32] Quang: Tuấn phụ trách tạo dữ liệu mẫu cho Staging trước ngày 22/10/2026 nhé.
+[09:33] Tuấn: Vâng, em đồng ý nhận nhiệm vụ này.
+[09:34] Hương: Còn một vấn đề chưa được giải quyết: Chính sách làm việc từ xa (Remote work policy) cho các bạn kỹ sư trong đợt trực tết Dương lịch và Tết Nguyên đán.
+[09:35] Lan: Các bạn trong nhóm đều mong muốn được đăng ký làm việc từ xa 100% trong hai tuần giáp Tết.
+[09:36] Tuấn: Nhưng đợt Tết lại là đợt cao điểm mua sắm, nếu xảy ra sự cố sập server thì làm việc từ xa có thể làm chậm thời gian phản ứng xử lý sự cố.
+[09:37] Quang: Vấn đề này liên quan đến chính sách nhân sự của toàn công ty, hôm nay chúng ta chưa thể đưa ra quyết định cuối cùng.
+[09:38] Quang: Tôi yêu cầu Hương làm việc với phòng Nhân sự (HR) để xây dựng dự thảo quy chế trực ca linh hoạt, sau đó sẽ đưa ra thảo luận lại trong cuộc họp tuần tới.
+[09:39] Hương: Em đồng ý, em sẽ gửi dự thảo chính sách trực Tết cho anh Quang vào thứ Hai tuần tới.
+[09:40] Quang: Một câu hỏi mở nữa: Chúng ta có nên chi 15,000 USD để tham gia triển lãm công nghệ TechExpo vào tháng 11 không?
+[09:41] Hương: Đội Marketing rất muốn tham gia để tìm kiếm khách hàng doanh nghiệp B2B mới.
+[09:42] Tuấn: Nhưng bên kỹ thuật sẽ phải cắt cử 2 kỹ sư senior đi hỗ trợ gian hàng demo, ảnh hưởng đến tiến độ dự án.
+[09:43] Quang: Mục này chúng ta tạm thời ghi nhận là vấn đề chưa chốt, cần chờ số liệu đánh giá ROI từ giám đốc kinh doanh.
+[09:44] Quang: Tổng kết lại cuộc họp hôm nay: Chúng ta đã đưa ra 5 quyết định chiến lược quan trọng về tách database, nâng cấp React 19, áp dụng Playwright E2E, tối ưu AWS chi phí và siết chặt bảo mật ISO 27001.
+[09:45] Quang: Tất cả các đầu việc đã được gán cụ thể cho Tuấn, Lan, Bình, Khoa và Hương với thời hạn rõ ràng. Tôi sẽ xử lý rào cản về quyền tài khoản AWS.
+[09:46] Tuấn: Cảm ơn anh Quang và mọi người.
+[09:47] Lan: Cảm ơn cả team, chúc mọi người hoàn thành tốt kế hoạch Q4.
+[09:48] Bình: Chào mọi người.
+[09:49] Khoa: Chào anh em, hẹn gặp lại ở buổi sync tuần tới.
+[09:50] Quang: Cuộc họp chính thức bế mạc. Cảm ơn tất cả mọi người!
