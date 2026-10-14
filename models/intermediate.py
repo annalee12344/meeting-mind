@@ -25,6 +25,8 @@ class UtteranceRole(str, Enum):
     INFORMS = "informs"          # Cung cấp thông tin / tri thức
     REQUESTS = "requests"        # Yêu cầu ai đó thực hiện điều gì
     ASSIGNS = "assigns"          # Giao việc cụ thể cho ai đó
+    ACCEPTS = "accepts"          # Xác nhận nhận việc / đồng ý thực hiện nhiệm vụ
+    DECLINES = "declines"        # Từ chối nhận việc / không thể đảm nhận
     QUESTIONS = "questions"      # Đặt câu hỏi / nêu vấn đề
     REPORTS = "reports"          # Báo cáo tiến độ / tình trạng
 
@@ -78,6 +80,8 @@ _ROLE_NORM_MAP: dict[str, UtteranceRole] = {
     "informs": UtteranceRole.INFORMS,
     "requests": UtteranceRole.REQUESTS,
     "assigns": UtteranceRole.ASSIGNS,
+    "accepts": UtteranceRole.ACCEPTS,
+    "declines": UtteranceRole.DECLINES,
     "questions": UtteranceRole.QUESTIONS,
     "reports": UtteranceRole.REPORTS,
     # Types mistakenly returned as roles:

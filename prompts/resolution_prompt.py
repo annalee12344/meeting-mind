@@ -7,6 +7,8 @@ xác định kết luận cuối cùng (confirmed, superseded, unresolved), tổ
 và xuất ra định dạng MeetingOutput hoàn chỉnh.
 """
 
+PROMPT_VERSION = "2.0.0"
+
 RESOLUTION_SYSTEM_PROMPT = """Bạn là chuyên gia phân tích và tổng hợp tiến trình cuộc họp tiếng Việt cấp cao.
 Nhiệm vụ của bạn là nhận danh sách các phát biểu đã được trích xuất từ Bước 1 (dạng JSON ExtractionResult) và giải quyết TIẾN TRÌNH THẢO LUẬN (progression resolution) để tạo ra dữ liệu cấu trúc hoàn chỉnh cho cuộc họp.
 
@@ -29,25 +31,34 @@ NGUYÊN TẮC CỐT LÕI (BẮT BUỘC TUÂN THỦ):
    - "needs_review": Nếu ngữ cảnh mơ hồ, mâu thuẫn dữ liệu hoặc thiếu bằng chứng chắc chắn để AI kết luận.
    - Nếu quyết định có điều kiện đi kèm (ví dụ: "chỉ triển khai nếu được sếp duyệt ngân sách"), hãy ghi điều kiện đó vào trường `condition`.
 
-3. BẰNG CHỨNG XÁC THỰC (EVIDENCE):
+3. QUY TẮC XÁC NHẬN NHẬN VIỆC (TASK ACCEPTANCE & ASSIGNEE_CONFIRMED):
+   - `assigned_by`: Tên người giao việc (ví dụ: Tuấn giao việc cho Lan -> assigned_by: "Tuấn"). Nếu tự nhận việc thì để null hoặc tên chính người đó.
+   - `assignee_confirmed`: boolean (true hoặc false).
+     * "Lan, setup the database by Friday" mà Lan không có phát biểu nhận lời trong biên bản = false, confirmation_utterance_id = null.
+     * "Ok anh, em làm" do chính người được giao (Lan) nói = true, confirmation_utterance_id = ID câu nói đó (ví dụ: "U007").
+     * "Mình sẽ làm phần đó" do chính người nói tự nhận = true (self-assigned), confirmation_utterance_id = ID câu nói đó.
+     * Người thứ ba đồng ý thay ("Anh thấy Lan làm được đấy") hoặc không ai trả lời = false, confirmation_utterance_id = null.
+   - `confirmation_utterance_id`: ID phát biểu mà người nhận việc trực tiếp đồng ý, nếu không có hãy để null.
+
+4. BẰNG CHỨNG XÁC THỰC (EVIDENCE):
    - MỌI mục (Decisions, ActionItems, Blockers, Requests, UnresolvedItems) đều PHẢI có ít nhất một `evidence`.
    - `quote`: PHẢI LÀ NGUYÊN VĂN chính xác từ transcript (sử dụng trường `quote` trong Step 1), TUYỆT ĐỐI KHÔNG paraphrase hay sửa từ.
    - `utterance_id`: Phải ghi đúng mã phát biểu (ví dụ: "U002", "U005") từ Step 1.
    - `verified`: Luôn để giá trị false (bước kiểm tra Python sau đó sẽ xác minh).
 
-4. QUY TẮC ĐẶT MÃ ĐỊNH DANH (ITEM IDs):
+5. QUY TẮC ĐẶT MÃ ĐỊNH DANH (ITEM IDs):
    - Quyết định: D001, D002, D003...
    - Việc cần làm (Action Items): A001, A002, A003...
    - Khó khăn / Rào cản (Blockers): B001, B002, B003...
    - Yêu cầu / Góp ý (Requests): R001, R002, R003... (loại `type` chỉ gồm: "request" hoặc "feedback")
    - Vấn đề chưa giải quyết (Unresolved Items): UR001, UR002...
 
-5. ĐÁNH DẤU CẦN CON NGƯỜI XEM XÉT (NEEDS_REVIEW):
+6. ĐÁNH DẤU CẦN CON NGƯỜI XEM XÉT (NEEDS_REVIEW):
    - Với Action Items: Nếu không xác định rõ ràng người nhận việc (assignee là null hoặc ai đó chung chung "team", "ai đó"), hoặc deadline mông lung không chắc chắn, đặt `needs_review: true`.
    - Với Decisions, Blockers, Requests: Nếu thông tin chưa đủ căn cứ xác thực, còn mơ hồ hoặc tranh cãi chưa ngã ngũ, hãy đặt `needs_review: true`.
    - Những vấn đề chưa giải quyết được hoặc chưa ai nhận trách nhiệm phải được đưa vào `unresolved_items` hoặc `blockers`.
 
-6. TÓM TẮT VÀ NGƯỜI THAM GIA:
+7. TÓM TẮT VÀ NGƯỜI THAM GIA:
    - `meeting_summary`: Bản tóm tắt súc tích 2-3 câu bằng tiếng Việt về mục đích và kết quả cốt lõi của cuộc họp.
    - `participants`: Mảng danh sách tên những người đã phát biểu trong cuộc họp (loại bỏ "Unknown" và các tên trùng lặp).
 
@@ -99,6 +110,9 @@ Phản hồi DUY NHẤT một chuỗi JSON hợp lệ theo đúng cấu trúc sa
       "item_id": "A001",
       "task": "Setup MongoDB database mới",
       "assignee": "Lan",
+      "assigned_by": "Tuấn",
+      "assignee_confirmed": true,
+      "confirmation_utterance_id": "U007",
       "deadline": "Thứ Sáu tuần này",
       "dependencies": ["D001"],
       "evidence": [

@@ -6,6 +6,8 @@ Prompt này yêu cầu Gemini phân tích biên bản cuộc họp tiếng Việ
 loại thông tin (type) và vai trò thảo luận (role), đồng thời trích dẫn NGUYÊN VĂN (verbatim).
 """
 
+PROMPT_VERSION = "2.0.0"
+
 EXTRACTION_SYSTEM_PROMPT = """Bạn là trợ lý AI chuyên nghiệp phân tích biên bản cuộc họp tiếng Việt.
 Nhiệm vụ của bạn là đọc biên bản cuộc họp đã được đánh mã phát biểu ([U001], [U002]...) và trích xuất tất cả các phát biểu có ý nghĩa quan trọng về mặt công việc, quyết định, phân công và tiến độ.
 
@@ -16,7 +18,7 @@ QUY TẮC CỐT LÕI (BẮT BUỘC TUÂN THỦ):
    - Hệ thống phía sau sẽ dùng thuật toán fuzzy match để kiểm tra từng từ trong "quote" với transcript gốc. Nếu bạn bịa hoặc sửa từ, kiểm tra sẽ thất bại.
 
 2. TRÍCH XUẤT CÁC PHÁT BIỂU CÓ GIÁ TRỊ:
-   - Trích xuất: quyết định, đề xuất, ý kiến ủng hộ/phản đối, giao việc, hạn chót (deadline), khó khăn (blocker), yêu cầu hỗ trợ, phản hồi, thông tin kỹ thuật/nghiệp vụ quan trọng.
+   - Trích xuất: quyết định, đề xuất, ý kiến ủng hộ/phản đối, giao việc, nhận việc/từ chối việc, hạn chót (deadline), khó khăn (blocker), yêu cầu hỗ trợ, phản hồi, thông tin kỹ thuật/nghiệp vụ quan trọng.
    - BỎ QUA các câu chào hỏi xã giao thuần túy (ví dụ: "Chào mọi người", "Mọi người nghe rõ không", "Tôi đi lấy cốc nước").
 
 3. ĐÚNG ĐỊNH DẠNG MÃ PHÁT BIỂU:
@@ -32,7 +34,7 @@ QUY TẮC CỐT LÕI (BẮT BUỘC TUÂN THỦ):
    - "feedback": Đánh giá, góp ý, nhận xét về giải pháp, sản phẩm hoặc quy trình.
    - "information": Cập nhật thông tin, chia sẻ bối cảnh, kiến thức kỹ thuật quan trọng.
    - "unresolved": Vấn đề còn vướng mắc, chưa thống nhất được trong cuộc họp.
-   - LƯU Ý BẮT BUỘC: Trường "type" CHỈ ĐƯỢC PHÉP là 1 trong 7 từ trên. TUYỆT ĐỐI KHÔNG đưa các giá trị của "role" (như "proposes", "reports", "supports", "assigns") vào trường "type".
+   - LƯU Ý BẮT BUỘC: Trường "type" CHỈ ĐƯỢC PHÉP là 1 trong 7 từ trên. TUYỆT ĐỐI KHÔNG đưa các giá trị của "role" vào trường "type".
 
 5. PHÂN LOẠI VAI TRÒ THẢO LUẬN ("role"):
    - "proposes": Đề xuất ý kiến, giải pháp hoặc phương án mới.
@@ -43,7 +45,9 @@ QUY TẮC CỐT LÕI (BẮT BUỘC TUÂN THỦ):
    - "conditions": Đặt điều kiện tiên quyết ("nếu...", "với điều kiện là...").
    - "informs": Cung cấp thông tin, dữ liệu, ngữ cảnh.
    - "requests": Yêu cầu ai đó làm việc gì hoặc hỗ trợ.
-   - "assigns": Phân công, giao việc trực tiếp cho người cụ thể.
+   - "assigns": Phân công, giao việc trực tiếp cho người cụ thể (ví dụ: "Lan setup DB nhé").
+   - "accepts": Xác nhận nhận việc / đồng ý thực hiện (ví dụ: "Ok anh, em làm", "Mình sẽ phụ trách phần này").
+   - "declines": Từ chối nhận việc / không thể đảm nhận (ví dụ: "Em bận sprint này không làm được").
    - "questions": Đặt câu hỏi thắc mắc hoặc chất vấn.
    - "reports": Báo cáo tiến độ hoặc hiện trạng công việc.
 
@@ -61,7 +65,7 @@ Phản hồi DUY NHẤT một chuỗi JSON hợp lệ theo đúng cấu trúc sa
       "quote": "string (trích dẫn NGUYÊN VĂN từ transcript)",
       "topic": "string (nhãn chủ đề ngắn gọn, ví dụ: 'Lựa chọn database')",
       "type": "decision | action_item | blocker | request | feedback | information | unresolved",
-      "role": "proposes | supports | rejects | supersedes | confirms | conditions | informs | requests | assigns | questions | reports",
+      "role": "proposes | supports | rejects | supersedes | confirms | conditions | informs | requests | assigns | accepts | declines | questions | reports",
       "references": ["string (danh sách ID tham chiếu)"]
     }
   ]
