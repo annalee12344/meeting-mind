@@ -18,7 +18,9 @@ from pydantic import BaseModel, Field
 
 import config
 from models.output import MeetingOutput, ResolvedResult
+from pipeline.cache import compute_analysis_cache_key, get_analysis_cache
 from pipeline.runner import run_pipeline
+from prompts import PROMPT_VERSION
 
 # Configure server logger
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
@@ -316,6 +318,22 @@ def analyze_transcript(request: AnalyzeRequest) -> MeetingOutput:
 
     effective_title = request.meeting_title or request.meeting_name or "Untitled Meeting"
 
+    # 0. Check Analysis Cache (for repeated custom analysis with identical parameters)
+    cache = get_analysis_cache()
+    cache_key = compute_analysis_cache_key(
+        clean_text,
+        meeting_date=request.meeting_date,
+        prompt_version=PROMPT_VERSION,
+    )
+    if config.CACHE_ENABLED:
+        cached_result = cache.get(cache_key)
+        if cached_result:
+            logger.info(
+                f"Analysis cache hit for '{effective_title}' (Key: {cache_key[:12]}...). "
+                "Returning cached MeetingOutput (preserving item UUIDs)."
+            )
+            return cached_result
+
     # 1. Check if input matches one of the precomputed benchmark samples
     if request.use_sample_cache:
         matched_sample = find_matching_sample(clean_text, request.sample_id)
@@ -325,11 +343,14 @@ def analyze_transcript(request: AnalyzeRequest) -> MeetingOutput:
                 "Returning precomputed, verified results instantly (0 Gemini API calls)."
             )
             resolved = load_sample_expected(matched_sample, threshold=request.threshold)
-            return map_to_public(
+            sample_output = map_to_public(
                 resolved,
                 transcript=clean_text,
                 meeting_date_input=request.meeting_date,
             )
+            if config.CACHE_ENABLED:
+                cache.set(cache_key, sample_output)
+            return sample_output
 
     # 2. For custom / modified transcripts, invoke Gemini pipeline
     if not config.GEMINI_API_KEY or config.GEMINI_API_KEY == "your_api_key_here":
@@ -346,6 +367,8 @@ def analyze_transcript(request: AnalyzeRequest) -> MeetingOutput:
             transcript=clean_text,
             meeting_date_input=request.meeting_date,
         )
+        if config.CACHE_ENABLED:
+            cache.set(cache_key, public_output)
         logger.info(
             f"Analysis completed successfully: {len(public_output.decisions)} decisions, "
             f"{len(public_output.tasks)} tasks, {len(public_output.unresolved)} unresolved, "
@@ -374,6 +397,14 @@ def analyze_transcript(request: AnalyzeRequest) -> MeetingOutput:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=safe_msg,
         )
+
+
+@app.post("/api/cache/clear")
+def clear_analysis_cache():
+    """Clear in-memory analysis cache."""
+    cache = get_analysis_cache()
+    cache.clear()
+    return {"status": "ok", "message": "Analysis cache cleared successfully."}
 
 
 if __name__ == "__main__":

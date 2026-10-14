@@ -20,6 +20,11 @@ MAX_CONTEXT_CHARS: int = int(os.getenv("MAX_CONTEXT_CHARS", "400000"))
 # ── Validation ───────────────────────────────────────
 FUZZY_MATCH_THRESHOLD: int = int(os.getenv("FUZZY_MATCH_THRESHOLD", "80"))
 
+# ── Cache ────────────────────────────────────────────
+CACHE_ENABLED: bool = os.getenv("CACHE_ENABLED", "true").lower() in ("true", "1", "yes")
+CACHE_CAPACITY: int = int(os.getenv("CACHE_CAPACITY", "100"))
+CACHE_TTL_SECONDS: float = float(os.getenv("CACHE_TTL_SECONDS", "3600.0"))
+
 # ── Server / CORS ────────────────────────────────────
 PORT: int = int(os.getenv("PORT", "8000"))
 CORS_ORIGINS: list[str] = [
