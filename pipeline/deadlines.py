@@ -169,6 +169,7 @@ def _get_target_dow_date(base_date: date, target_dow: int, next_week: bool = Fal
 def convert_deadline_to_iso(
     deadline_raw: Optional[str],
     meeting_date: date,
+    is_relative_allowed: bool = True,
 ) -> Optional[str]:
     """
     Convert relative/informal deadline text to absolute ISO 8601 (YYYY-MM-DD).
@@ -181,6 +182,10 @@ def convert_deadline_to_iso(
     - "cuối tuần", "weekend" -> coming Saturday
     - "cuối tháng", "end of month" -> last day of meeting_date's month
     - "trước ngày 20", "ngày 20", "by the 20th", "20/10", "20/10/2026"
+    
+    If is_relative_allowed is False (e.g. meeting date is unknown/fallback_today),
+    relative date phrases (like "ngày mai", "thứ Tư", "cuối tuần") return None
+    to prevent inventing a calendar date without a known reference date.
     
     Returns ISO date string, or None if parsing fails (no guesswork).
     """
@@ -206,6 +211,10 @@ def convert_deadline_to_iso(
             return d.isoformat()
         except ValueError:
             return None
+
+    # If relative dates are not allowed because meeting date is unknown, do not invent a date
+    if not is_relative_allowed:
+        return None
 
     # 3. Day / Month without year: "20/10", "15/6", "ngày 20/10"
     dm_match = re.search(r"\b(0?[1-9]|[12]\d|3[01])/(0?[1-9]|1[0-2])\b", norm)
