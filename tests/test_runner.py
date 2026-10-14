@@ -480,14 +480,12 @@ def print_test_results_table(test_meta: Dict[str, Any], evaluation: Dict[str, An
 
 
 def resolve_transcript_path(filename: str) -> Path:
-    """Resolve transcript file from transcripts or transcripts_extra dirs."""
+    """Resolve transcript file from transcripts directory."""
     tfile = Path(filename)
     if tfile.is_absolute() and tfile.exists():
         return tfile
     if (config.TRANSCRIPTS_DIR / tfile).exists():
         return config.TRANSCRIPTS_DIR / tfile
-    if (config.TESTS_DIR / "transcripts_extra" / "decisions" / tfile).exists():
-        return config.TESTS_DIR / "transcripts_extra" / "decisions" / tfile
     if (config.TESTS_DIR / tfile).exists():
         return config.TESTS_DIR / tfile
     if (config.PROJECT_ROOT / tfile).exists():
