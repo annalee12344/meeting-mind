@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-10-15T01:04:55.255704",
-  "total_tests": 1,
+  "timestamp": "2026-10-15T01:39:31.614648",
+  "total_tests": 9,
   "overall_summary": {
-    "expected_count": 7,
-    "actual_count": 9,
-    "matched_count": 7,
-    "precision": 0.7778,
+    "expected_count": 54,
+    "actual_count": 54,
+    "matched_count": 54,
+    "precision": 1.0,
     "recall": 1.0,
-    "f1": 0.875
+    "f1": 1.0
   },
   "decisions_summary": {
-    "expected_count": 2,
-    "actual_count": 2,
-    "matched_count": 2,
+    "expected_count": 10,
+    "actual_count": 10,
+    "matched_count": 10,
     "precision": 1.0,
     "recall": 1.0,
     "f1": 1.0
@@ -34,13 +34,13 @@
           "matches": [
             {
               "expected": "Phạm vi Sprint 24 (Sprint Scope): Triển khai tích hợp thanh toán QR code qua cổng VNPay và nâng cấp UI giỏ hàng, hoãn tính năng tích điểm sang Sprint 25 [ItemStatus.CONFIRMED]",
-              "actual": "Phạm vi Sprint 24: Tập trung toàn lực triển khai tích hợp thanh toán QR code qua cổng VNPay và nâng cấp UI luồng giỏ hàng, tạm hoãn tính năng tích điểm sang Sprint 25 [ItemStatus.CONFIRMED]",
-              "score": 90.2
+              "actual": "Phạm vi Sprint 24 (Sprint Scope): Triển khai tích hợp thanh toán QR code qua cổng VNPay và nâng cấp UI giỏ hàng, hoãn tính năng tích điểm sang Sprint 25 [ItemStatus.CONFIRMED]",
+              "score": 100.0
             },
             {
               "expected": "Lịch code freeze và quy ước release Sprint 24: Code freeze vào 17:00 ngày 24/10 và QA chạy regression test ngày 25/10 trước khi deploy production vào sáng thứ Bảy [ItemStatus.CONFIRMED]",
-              "actual": "Lịch Code Freeze và Release: Code freeze đúng 17:00 ngày 24 tháng 10 và QA test regression vào ngày 25 tháng 10 [ItemStatus.CONFIRMED]",
-              "score": 74.6
+              "actual": "Lịch code freeze và quy ước release Sprint 24: Code freeze vào 17:00 ngày 24/10 và QA chạy regression test ngày 25/10 trước khi deploy production vào sáng thứ Bảy [ItemStatus.CONFIRMED]",
+              "score": 100.0
             }
           ],
           "unmatched_expected": [],
@@ -49,33 +49,30 @@
         },
         "Action Items": {
           "expected_count": 3,
-          "actual_count": 5,
+          "actual_count": 3,
           "matched_count": 3,
-          "precision": 0.6,
+          "precision": 1.0,
           "recall": 1.0,
-          "f1": 0.75,
+          "f1": 1.0,
           "matches": [
             {
               "expected": "Hoàn thiện Figma design specs chi tiết và xuất bộ design tokens cho giỏ hàng mới",
-              "actual": "Hoàn thiện file Figma design specs chi tiết và xuất bộ design tokens cho giỏ hàng mới",
+              "actual": "Hoàn thiện Figma design specs chi tiết và xuất bộ design tokens cho giỏ hàng mới",
               "score": 100.0
             },
             {
               "expected": "Tích hợp SDK VNPay, viết API endpoints và xử lý webhook callback từ cổng thanh toán",
-              "actual": "Tích hợp SDK VNPay, viết các API endpoints và xử lý webhook callback từ cổng thanh toán",
+              "actual": "Tích hợp SDK VNPay, viết API endpoints và xử lý webhook callback từ cổng thanh toán",
               "score": 100.0
             },
             {
               "expected": "Xây dựng test cases chi tiết cho luồng quét mã QR và ma trận test trên thiết bị iOS, Android",
-              "actual": "Xây dựng bộ test cases chi tiết cho luồng quét mã QR, bao gồm ma trận test trên các thiết bị iOS, Android và các tình huống mạng chập chờn",
-              "score": 98.2
+              "actual": "Xây dựng test cases chi tiết cho luồng quét mã QR và ma trận test trên thiết bị iOS, Android",
+              "score": 100.0
             }
           ],
           "unmatched_expected": [],
-          "unmatched_actual": [
-            "Trực tiếp gọi điện cho bên account manager của VNPay để push tiến độ nếu chưa nhận được phản hồi",
-            "Tạo ticket gửi team DevOps mở whitelist IP và cấu hình port mở cho webhook domain staging"
-          ]
+          "unmatched_actual": []
         },
         "Blockers": {
           "expected_count": 1,
@@ -87,8 +84,8 @@
           "matches": [
             {
               "expected": "Đối tác VNPay chưa cấp tài khoản sandbox và API secret key cho môi trường test dù đã gửi email yêu cầu từ 3 ngày trước",
-              "actual": "Bên đối tác VNPay vẫn chưa gửi lại tài khoản sandbox và API secret key cho môi trường test",
-              "score": 90.2
+              "actual": "Đối tác VNPay chưa cấp tài khoản sandbox và API secret key cho môi trường test dù đã gửi email yêu cầu từ 3 ngày trước",
+              "score": 100.0
             }
           ],
           "unmatched_expected": [],
@@ -104,8 +101,8 @@
           "matches": [
             {
               "expected": "Nhờ team DevOps mở whitelist IP và cấu hình mở port cho webhook domain staging trước 10:00 ngày 21/10",
-              "actual": "Nhờ team DevOps mở whitelist IP và cấu hình port mở cho webhook domain staging trước 10:00 sáng thứ Hai 21/10 để test nhận callback IPN từ VNPay",
-              "score": 97.4
+              "actual": "Nhờ team DevOps mở whitelist IP và cấu hình mở port cho webhook domain staging trước 10:00 ngày 21/10",
+              "score": 100.0
             }
           ],
           "unmatched_expected": [],
@@ -125,16 +122,904 @@
       },
       "totals": {
         "expected_count": 7,
-        "actual_count": 9,
+        "actual_count": 7,
         "matched_count": 7,
-        "precision": 0.7778,
+        "precision": 1.0,
         "recall": 1.0,
-        "f1": 0.875
+        "f1": 1.0
       },
       "public_counts": {
         "decisions": 2,
-        "tasks": 6,
+        "tasks": 4,
         "unresolved": 0,
+        "issues": 1
+      }
+    },
+    {
+      "test_id": 2,
+      "name": "test_02_decision_change",
+      "description": "Product launch timing (A->B changes: 2 decisions with history, 2 actions, 1 unresolved)",
+      "status": "passed",
+      "categories": {
+        "Decisions": {
+          "expected_count": 2,
+          "actual_count": 2,
+          "matched_count": 2,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [
+            {
+              "expected": "Thời điểm ra mắt sản phẩm (Product Launch Date): Dời ngày ra mắt sản phẩm sang ngày 15 tháng 7 [ItemStatus.CONFIRMED]",
+              "actual": "Thời điểm ra mắt sản phẩm (Product Launch Date): Dời ngày ra mắt sản phẩm sang ngày 15 tháng 7 [ItemStatus.CONFIRMED]",
+              "score": 100.0
+            },
+            {
+              "expected": "Phương án kỹ thuật cho module thanh toán: Tích hợp cổng thanh toán đối tác trung gian có sẵn (PayOS) cho giai đoạn MVP [ItemStatus.CONFIRMED]",
+              "actual": "Phương án kỹ thuật cho module thanh toán: Tích hợp cổng thanh toán đối tác trung gian có sẵn (PayOS) cho giai đoạn MVP [ItemStatus.CONFIRMED]",
+              "score": 100.0
+            }
+          ],
+          "unmatched_expected": [],
+          "unmatched_actual": [],
+          "status_mismatches": []
+        },
+        "Action Items": {
+          "expected_count": 2,
+          "actual_count": 2,
+          "matched_count": 2,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [
+            {
+              "expected": "Lập tài liệu kiến trúc kỹ thuật và so sánh chi phí các đối tác cổng thanh toán",
+              "actual": "Lập tài liệu kiến trúc kỹ thuật và so sánh chi phí các đối tác cổng thanh toán",
+              "score": 100.0
+            },
+            {
+              "expected": "Cập nhật lại timeline kế hoạch truyền thông marketing cho ngày ra mắt 15 tháng 7",
+              "actual": "Cập nhật lại timeline kế hoạch truyền thông marketing cho ngày ra mắt 15 tháng 7",
+              "score": 100.0
+            }
+          ],
+          "unmatched_expected": [],
+          "unmatched_actual": []
+        },
+        "Blockers": {
+          "expected_count": 0,
+          "actual_count": 0,
+          "matched_count": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [],
+          "unmatched_expected": [],
+          "unmatched_actual": []
+        },
+        "Requests": {
+          "expected_count": 0,
+          "actual_count": 0,
+          "matched_count": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [],
+          "unmatched_expected": [],
+          "unmatched_actual": []
+        },
+        "Unresolved Items": {
+          "expected_count": 1,
+          "actual_count": 1,
+          "matched_count": 1,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [
+            {
+              "expected": "Lựa chọn cơ sở dữ liệu (PostgreSQL vs MongoDB) cho module phân tích hành vi và event logs",
+              "actual": "Lựa chọn cơ sở dữ liệu (PostgreSQL vs MongoDB) cho module phân tích hành vi và event logs",
+              "score": 100.0
+            }
+          ],
+          "unmatched_expected": [],
+          "unmatched_actual": []
+        }
+      },
+      "totals": {
+        "expected_count": 5,
+        "actual_count": 5,
+        "matched_count": 5,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "public_counts": {
+        "decisions": 2,
+        "tasks": 2,
+        "unresolved": 1,
+        "issues": 0
+      }
+    },
+    {
+      "test_id": 3,
+      "name": "test_03_chaotic",
+      "description": "Chaotic meeting (interruptions, casual speech, sarcasm, unresolved conflict)",
+      "status": "passed",
+      "categories": {
+        "Decisions": {
+          "expected_count": 1,
+          "actual_count": 1,
+          "matched_count": 1,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [
+            {
+              "expected": "Xử lý sự cố spam notification trên môi trường staging: Tắt tạm thời banner notification trên staging để giảm phiền toái khi test [ItemStatus.CONFIRMED]",
+              "actual": "Xử lý sự cố spam notification trên môi trường staging: Tắt tạm thời banner notification trên staging để giảm phiền toái khi test [ItemStatus.CONFIRMED]",
+              "score": 100.0
+            }
+          ],
+          "unmatched_expected": [],
+          "unmatched_actual": [],
+          "status_mismatches": []
+        },
+        "Action Items": {
+          "expected_count": 1,
+          "actual_count": 1,
+          "matched_count": 1,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [
+            {
+              "expected": "Kiểm tra file log crash của server staging hôm qua và gửi lên group chat",
+              "actual": "Kiểm tra file log crash của server staging hôm qua và gửi lên group chat",
+              "score": 100.0
+            }
+          ],
+          "unmatched_expected": [],
+          "unmatched_actual": []
+        },
+        "Blockers": {
+          "expected_count": 1,
+          "actual_count": 1,
+          "matched_count": 1,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [
+            {
+              "expected": "Server staging bị leak memory lên 98% RAM và crash lúc 2 giờ sáng",
+              "actual": "Server staging bị leak memory lên 98% RAM và crash lúc 2 giờ sáng",
+              "score": 100.0
+            }
+          ],
+          "unmatched_expected": [],
+          "unmatched_actual": []
+        },
+        "Requests": {
+          "expected_count": 0,
+          "actual_count": 0,
+          "matched_count": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [],
+          "unmatched_expected": [],
+          "unmatched_actual": []
+        },
+        "Unresolved Items": {
+          "expected_count": 2,
+          "actual_count": 2,
+          "matched_count": 2,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [
+            {
+              "expected": "Lựa chọn giữa WebSocket và HTTP Long polling/SSE cho module chat",
+              "actual": "Lựa chọn giữa WebSocket và HTTP Long polling/SSE cho module chat",
+              "score": 100.0
+            },
+            {
+              "expected": "Đề xuất viết lại toàn bộ notification service bằng Go",
+              "actual": "Đề xuất viết lại toàn bộ notification service bằng Go",
+              "score": 100.0
+            }
+          ],
+          "unmatched_expected": [],
+          "unmatched_actual": []
+        }
+      },
+      "totals": {
+        "expected_count": 5,
+        "actual_count": 5,
+        "matched_count": 5,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "public_counts": {
+        "decisions": 1,
+        "tasks": 1,
+        "unresolved": 2,
+        "issues": 1
+      }
+    },
+    {
+      "test_id": 4,
+      "name": "test_04_implicit",
+      "description": "Implicit context (implicit pronouns, silence consensus, no deadlines)",
+      "status": "passed",
+      "categories": {
+        "Decisions": {
+          "expected_count": 1,
+          "actual_count": 1,
+          "matched_count": 1,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [
+            {
+              "expected": "Thiết kế giao diện thanh điều hướng mới: Bỏ thanh điều hướng bên trái và chuyển sang thanh menu dropdown ở phía trên theo mẫu số 2 [ItemStatus.CONFIRMED]",
+              "actual": "Thiết kế giao diện thanh điều hướng mới: Bỏ thanh điều hướng bên trái và chuyển sang thanh menu dropdown ở phía trên theo mẫu số 2 [ItemStatus.CONFIRMED]",
+              "score": 100.0
+            }
+          ],
+          "unmatched_expected": [],
+          "unmatched_actual": [],
+          "status_mismatches": []
+        },
+        "Action Items": {
+          "expected_count": 2,
+          "actual_count": 2,
+          "matched_count": 2,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [
+            {
+              "expected": "Liên hệ với đối tác ('anh ấy') để thăm dò thái độ về vấn đề hợp đồng và giá dịch vụ",
+              "actual": "Liên hệ với đối tác ('anh ấy') để thăm dò thái độ về vấn đề hợp đồng và giá dịch vụ",
+              "score": 100.0
+            },
+            {
+              "expected": "Cập nhật các số liệu trong bảng báo cáo tổng hợp theo format mẫu để trình ban giám đốc",
+              "actual": "Cập nhật các số liệu trong bảng báo cáo tổng hợp theo format mẫu để trình ban giám đốc",
+              "score": 100.0
+            }
+          ],
+          "unmatched_expected": [],
+          "unmatched_actual": []
+        },
+        "Blockers": {
+          "expected_count": 0,
+          "actual_count": 0,
+          "matched_count": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [],
+          "unmatched_expected": [],
+          "unmatched_actual": []
+        },
+        "Requests": {
+          "expected_count": 0,
+          "actual_count": 0,
+          "matched_count": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [],
+          "unmatched_expected": [],
+          "unmatched_actual": []
+        },
+        "Unresolved Items": {
+          "expected_count": 1,
+          "actual_count": 1,
+          "matched_count": 1,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [
+            {
+              "expected": "Yêu cầu giảm giá 15% hoặc cắt giảm tính năng từ đối tác ('bên kia')",
+              "actual": "Yêu cầu giảm giá 15% hoặc cắt giảm tính năng từ đối tác ('bên kia')",
+              "score": 100.0
+            }
+          ],
+          "unmatched_expected": [],
+          "unmatched_actual": []
+        }
+      },
+      "totals": {
+        "expected_count": 4,
+        "actual_count": 4,
+        "matched_count": 4,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "public_counts": {
+        "decisions": 1,
+        "tasks": 2,
+        "unresolved": 1,
+        "issues": 0
+      }
+    },
+    {
+      "test_id": 5,
+      "name": "test_05_sarcasm_fail",
+      "description": "Adversarial test (sarcasm rejection, joke proposals, unresolved disputes)",
+      "status": "passed",
+      "categories": {
+        "Decisions": {
+          "expected_count": 1,
+          "actual_count": 1,
+          "matched_count": 1,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [
+            {
+              "expected": "Lịch làm việc onsite tại văn phòng khách hàng của team dev: Toàn bộ team dev phải sang làm việc onsite tại văn phòng khách hàng cả tuần từ thứ Hai đến thứ Sáu tuần sau [ItemStatus.CONFIRMED]",
+              "actual": "Lịch làm việc onsite tại văn phòng khách hàng của team dev: Toàn bộ team dev phải sang làm việc onsite tại văn phòng khách hàng cả tuần từ thứ Hai đến thứ Sáu tuần sau [ItemStatus.CONFIRMED]",
+              "score": 100.0
+            }
+          ],
+          "unmatched_expected": [],
+          "unmatched_actual": [],
+          "status_mismatches": []
+        },
+        "Action Items": {
+          "expected_count": 1,
+          "actual_count": 1,
+          "matched_count": 1,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [
+            {
+              "expected": "Sang làm việc onsite tại văn phòng đối tác từ thứ Hai đến thứ Sáu",
+              "actual": "Sang làm việc onsite tại văn phòng đối tác từ thứ Hai đến thứ Sáu",
+              "score": 100.0
+            }
+          ],
+          "unmatched_expected": [],
+          "unmatched_actual": []
+        },
+        "Blockers": {
+          "expected_count": 0,
+          "actual_count": 0,
+          "matched_count": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [],
+          "unmatched_expected": [],
+          "unmatched_actual": []
+        },
+        "Requests": {
+          "expected_count": 0,
+          "actual_count": 0,
+          "matched_count": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [],
+          "unmatched_expected": [],
+          "unmatched_actual": []
+        },
+        "Unresolved Items": {
+          "expected_count": 2,
+          "actual_count": 2,
+          "matched_count": 2,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [
+            {
+              "expected": "Lựa chọn màu sắc cho nút Checkout (màu đỏ vs màu xanh lá)",
+              "actual": "Lựa chọn màu sắc cho nút Checkout (màu đỏ vs màu xanh lá)",
+              "score": 100.0
+            },
+            {
+              "expected": "Đề xuất loại bỏ bước xác thực OTP và mật khẩu khi đăng nhập",
+              "actual": "Đề xuất loại bỏ bước xác thực OTP và mật khẩu khi đăng nhập",
+              "score": 100.0
+            }
+          ],
+          "unmatched_expected": [],
+          "unmatched_actual": []
+        }
+      },
+      "totals": {
+        "expected_count": 4,
+        "actual_count": 4,
+        "matched_count": 4,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "public_counts": {
+        "decisions": 1,
+        "tasks": 1,
+        "unresolved": 2,
+        "issues": 0
+      }
+    },
+    {
+      "test_id": 6,
+      "name": "test_06_explicit_decision",
+      "description": "Explicit decision (proposal accepted with 'chốt': MongoDB log DB, 4 tasks, 1 blocker)",
+      "status": "passed",
+      "categories": {
+        "Decisions": {
+          "expected_count": 1,
+          "actual_count": 1,
+          "matched_count": 1,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [
+            {
+              "expected": "Lựa chọn cơ sở dữ liệu cho module phân tích log: Dùng MongoDB thay PostgreSQL cho module phân tích log hệ thống [ItemStatus.CONFIRMED]",
+              "actual": "Lựa chọn cơ sở dữ liệu cho module phân tích log: Dùng MongoDB thay PostgreSQL cho module phân tích log hệ thống [ItemStatus.CONFIRMED]",
+              "score": 100.0
+            }
+          ],
+          "unmatched_expected": [],
+          "unmatched_actual": [],
+          "status_mismatches": []
+        },
+        "Action Items": {
+          "expected_count": 4,
+          "actual_count": 4,
+          "matched_count": 4,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [
+            {
+              "expected": "Viết lại data access layer kết nối với MongoDB",
+              "actual": "Viết lại data access layer kết nối với MongoDB",
+              "score": 100.0
+            },
+            {
+              "expected": "Xây dựng script migrate dữ liệu log cũ từ PostgreSQL sang MongoDB",
+              "actual": "Xây dựng script migrate dữ liệu log cũ từ PostgreSQL sang MongoDB",
+              "score": 100.0
+            },
+            {
+              "expected": "Soạn tài liệu query cheat-sheet cho team",
+              "actual": "Soạn tài liệu query cheat-sheet cho team",
+              "score": 100.0
+            },
+            {
+              "expected": "Mở ticket yêu cầu bộ phận hạ tầng cấp thêm 200GB ổ SSD",
+              "actual": "Mở ticket yêu cầu bộ phận hạ tầng cấp thêm 200GB ổ SSD",
+              "score": 100.0
+            }
+          ],
+          "unmatched_expected": [],
+          "unmatched_actual": []
+        },
+        "Blockers": {
+          "expected_count": 1,
+          "actual_count": 1,
+          "matched_count": 1,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [
+            {
+              "expected": "Ổ đĩa lưu trữ trên cluster staging hiện chỉ còn trống khoảng 15%, có thể thiếu dung lượng khi chạy thử migrate",
+              "actual": "Ổ đĩa lưu trữ trên cluster staging hiện chỉ còn trống khoảng 15%, có thể thiếu dung lượng khi chạy thử migrate",
+              "score": 100.0
+            }
+          ],
+          "unmatched_expected": [],
+          "unmatched_actual": []
+        },
+        "Requests": {
+          "expected_count": 0,
+          "actual_count": 0,
+          "matched_count": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [],
+          "unmatched_expected": [],
+          "unmatched_actual": []
+        },
+        "Unresolved Items": {
+          "expected_count": 1,
+          "actual_count": 1,
+          "matched_count": 1,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [
+            {
+              "expected": "Quy trình backup tự động định kỳ của MongoDB",
+              "actual": "Quy trình backup tự động định kỳ của MongoDB",
+              "score": 100.0
+            }
+          ],
+          "unmatched_expected": [],
+          "unmatched_actual": []
+        }
+      },
+      "totals": {
+        "expected_count": 7,
+        "actual_count": 7,
+        "matched_count": 7,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "public_counts": {
+        "decisions": 1,
+        "tasks": 4,
+        "unresolved": 1,
+        "issues": 1
+      }
+    },
+    {
+      "test_id": 7,
+      "name": "test_07_implicit_agreement",
+      "description": "Implicit agreement without 'chốt' (accepted using 'ok', 'được', 'nhất trí': Tailwind UI, 3 tasks)",
+      "status": "passed",
+      "categories": {
+        "Decisions": {
+          "expected_count": 1,
+          "actual_count": 1,
+          "matched_count": 1,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [
+            {
+              "expected": "Giải pháp UI library cho cổng quản trị nội bộ: Dùng Tailwind UI kết hợp Next.js cho cổng quản trị nội bộ [ItemStatus.CONFIRMED]",
+              "actual": "Giải pháp UI library cho cổng quản trị nội bộ: Dùng Tailwind UI kết hợp Next.js cho cổng quản trị nội bộ [ItemStatus.CONFIRMED]",
+              "score": 100.0
+            }
+          ],
+          "unmatched_expected": [],
+          "unmatched_actual": [],
+          "status_mismatches": []
+        },
+        "Action Items": {
+          "expected_count": 3,
+          "actual_count": 3,
+          "matched_count": 3,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [
+            {
+              "expected": "Khởi tạo repository và cấu hình base layout với Next.js",
+              "actual": "Khởi tạo repository và cấu hình base layout với Next.js",
+              "score": 100.0
+            },
+            {
+              "expected": "Xuất bảng màu thương hiệu và typography tokens lên Figma",
+              "actual": "Xuất bảng màu thương hiệu và typography tokens lên Figma",
+              "score": 100.0
+            },
+            {
+              "expected": "Chuẩn bị kịch bản kiểm thử giao diện cho các màn hình phân quyền",
+              "actual": "Chuẩn bị kịch bản kiểm thử giao diện cho các màn hình phân quyền",
+              "score": 100.0
+            }
+          ],
+          "unmatched_expected": [],
+          "unmatched_actual": []
+        },
+        "Blockers": {
+          "expected_count": 1,
+          "actual_count": 1,
+          "matched_count": 1,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [
+            {
+              "expected": "Tài khoản npm tổ chức công ty chưa được cấp quyền tải gói thư viện riêng",
+              "actual": "Tài khoản npm tổ chức công ty chưa được cấp quyền tải gói thư viện riêng",
+              "score": 100.0
+            }
+          ],
+          "unmatched_expected": [],
+          "unmatched_actual": []
+        },
+        "Requests": {
+          "expected_count": 1,
+          "actual_count": 1,
+          "matched_count": 1,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [
+            {
+              "expected": "Cấp quyền truy cập npm tổ chức công ty cho An",
+              "actual": "Cấp quyền truy cập npm tổ chức công ty cho An",
+              "score": 100.0
+            }
+          ],
+          "unmatched_expected": [],
+          "unmatched_actual": []
+        },
+        "Unresolved Items": {
+          "expected_count": 1,
+          "actual_count": 1,
+          "matched_count": 1,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [
+            {
+              "expected": "Chọn thư viện biểu đồ doanh thu (Recharts hay ChartJS)",
+              "actual": "Chọn thư viện biểu đồ doanh thu (Recharts hay ChartJS)",
+              "score": 100.0
+            }
+          ],
+          "unmatched_expected": [],
+          "unmatched_actual": []
+        }
+      },
+      "totals": {
+        "expected_count": 7,
+        "actual_count": 7,
+        "matched_count": 7,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "public_counts": {
+        "decisions": 1,
+        "tasks": 4,
+        "unresolved": 1,
+        "issues": 1
+      }
+    },
+    {
+      "test_id": 8,
+      "name": "test_08_mixed_utterance",
+      "description": "Mixed utterance (decision and task in single utterance: GCP staging migration, 5 tasks)",
+      "status": "passed",
+      "categories": {
+        "Decisions": {
+          "expected_count": 1,
+          "actual_count": 1,
+          "matched_count": 1,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [
+            {
+              "expected": "Hạ tầng môi trường staging: Chuyển toàn bộ môi trường staging sang GCP để tiết kiệm chi phí [ItemStatus.CONFIRMED]",
+              "actual": "Hạ tầng môi trường staging: Chuyển toàn bộ môi trường staging sang GCP để tiết kiệm chi phí [ItemStatus.CONFIRMED]",
+              "score": 100.0
+            }
+          ],
+          "unmatched_expected": [],
+          "unmatched_actual": [],
+          "status_mismatches": []
+        },
+        "Action Items": {
+          "expected_count": 5,
+          "actual_count": 5,
+          "matched_count": 5,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [
+            {
+              "expected": "Tạo cụm staging trên GCP",
+              "actual": "Tạo cụm staging trên GCP",
+              "score": 100.0
+            },
+            {
+              "expected": "Viết tài liệu phân quyền IAM và cấu hình service account cho dev",
+              "actual": "Viết tài liệu phân quyền IAM và cấu hình service account cho dev",
+              "score": 100.0
+            },
+            {
+              "expected": "Cập nhật biến môi trường test suite runner",
+              "actual": "Cập nhật biến môi trường test suite runner",
+              "score": 100.0
+            },
+            {
+              "expected": "Chuyển đổi DNS domain staging sang Cloudflare",
+              "actual": "Chuyển đổi DNS domain staging sang Cloudflare",
+              "score": 100.0
+            },
+            {
+              "expected": "Backup dữ liệu cấu hình staging cũ sang S3",
+              "actual": "Backup dữ liệu cấu hình staging cũ sang S3",
+              "score": 100.0
+            }
+          ],
+          "unmatched_expected": [],
+          "unmatched_actual": []
+        },
+        "Blockers": {
+          "expected_count": 1,
+          "actual_count": 1,
+          "matched_count": 1,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [
+            {
+              "expected": "Domain staging hiện tại gắn chặt với AWS Route53 cần đổi nameserver sang Cloudflare",
+              "actual": "Domain staging hiện tại gắn chặt với AWS Route53 cần đổi nameserver sang Cloudflare",
+              "score": 100.0
+            }
+          ],
+          "unmatched_expected": [],
+          "unmatched_actual": []
+        },
+        "Requests": {
+          "expected_count": 0,
+          "actual_count": 0,
+          "matched_count": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [],
+          "unmatched_expected": [],
+          "unmatched_actual": []
+        },
+        "Unresolved Items": {
+          "expected_count": 1,
+          "actual_count": 1,
+          "matched_count": 1,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [
+            {
+              "expected": "Chuyển cơ sở dữ liệu production sang GCP",
+              "actual": "Chuyển cơ sở dữ liệu production sang GCP",
+              "score": 100.0
+            }
+          ],
+          "unmatched_expected": [],
+          "unmatched_actual": []
+        }
+      },
+      "totals": {
+        "expected_count": 8,
+        "actual_count": 8,
+        "matched_count": 8,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "public_counts": {
+        "decisions": 1,
+        "tasks": 5,
+        "unresolved": 1,
+        "issues": 1
+      }
+    },
+    {
+      "test_id": 9,
+      "name": "test_09_negative_control",
+      "description": "Negative control (discussion and tasks but 0 decisions accepted: deferred notifications, 4 tasks)",
+      "status": "passed",
+      "categories": {
+        "Decisions": {
+          "expected_count": 0,
+          "actual_count": 0,
+          "matched_count": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [],
+          "unmatched_expected": [],
+          "unmatched_actual": [],
+          "status_mismatches": []
+        },
+        "Action Items": {
+          "expected_count": 4,
+          "actual_count": 4,
+          "matched_count": 4,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [
+            {
+              "expected": "Soạn thảo bảng khảo sát người dùng về tần suất nhận thông báo",
+              "actual": "Soạn thảo bảng khảo sát người dùng về tần suất nhận thông báo",
+              "score": 100.0
+            },
+            {
+              "expected": "Kiểm tra log push notification để thống kê tần suất gửi tin nhắn trung bình mỗi ngày",
+              "actual": "Kiểm tra log push notification để thống kê tần suất gửi tin nhắn trung bình mỗi ngày",
+              "score": 100.0
+            },
+            {
+              "expected": "Cập nhật tài liệu giải đáp thắc mắc (FAQ) về cách tắt bớt thông báo",
+              "actual": "Cập nhật tài liệu giải đáp thắc mắc (FAQ) về cách tắt bớt thông báo",
+              "score": 100.0
+            },
+            {
+              "expected": "Tạo issue trên Jira để theo dõi lỗi Firebase 503",
+              "actual": "Tạo issue trên Jira để theo dõi lỗi Firebase 503",
+              "score": 100.0
+            }
+          ],
+          "unmatched_expected": [],
+          "unmatched_actual": []
+        },
+        "Blockers": {
+          "expected_count": 1,
+          "actual_count": 1,
+          "matched_count": 1,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [
+            {
+              "expected": "Dịch vụ Firebase Messaging thỉnh thoảng trả về mã lỗi 503 khi gửi broadcast",
+              "actual": "Dịch vụ Firebase Messaging thỉnh thoảng trả về mã lỗi 503 khi gửi broadcast",
+              "score": 100.0
+            }
+          ],
+          "unmatched_expected": [],
+          "unmatched_actual": []
+        },
+        "Requests": {
+          "expected_count": 0,
+          "actual_count": 0,
+          "matched_count": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [],
+          "unmatched_expected": [],
+          "unmatched_actual": []
+        },
+        "Unresolved Items": {
+          "expected_count": 2,
+          "actual_count": 2,
+          "matched_count": 2,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "matches": [
+            {
+              "expected": "Đổi cơ chế thông báo sang dạng gom theo khung giờ",
+              "actual": "Đổi cơ chế thông báo sang dạng gom theo khung giờ",
+              "score": 100.0
+            },
+            {
+              "expected": "Bổ sung kênh thông báo qua Zalo ZNS",
+              "actual": "Bổ sung kênh thông báo qua Zalo ZNS",
+              "score": 100.0
+            }
+          ],
+          "unmatched_expected": [],
+          "unmatched_actual": []
+        }
+      },
+      "totals": {
+        "expected_count": 7,
+        "actual_count": 7,
+        "matched_count": 7,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "public_counts": {
+        "decisions": 0,
+        "tasks": 4,
+        "unresolved": 2,
         "issues": 1
       }
     }
