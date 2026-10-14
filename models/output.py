@@ -225,6 +225,8 @@ class PublicDecision(BaseModel):
     content: str = Field(description="Final confirmed decision content")
     proposed_by: Optional[str] = Field(default=None, description="Speaker who proposed the idea")
     confirmed_by: Optional[str] = Field(default=None, description="Speaker who finalized/confirmed")
+    status: str = Field(default="confirmed", description="Decision status ('confirmed')")
+    condition: Optional[str] = Field(default=None, description="Condition attached to decision if any")
     evidence: list[Evidence] = Field(default_factory=list)
     history: list[HistoryEntry] = Field(default_factory=list, description="Decision Trail")
     needs_review: bool = False

@@ -66,26 +66,28 @@ class TestMapper(unittest.TestCase):
         h1 = HistoryEntry(value="Postgres", status=ItemStatus.SUPERSEDED, role="proposes", evidence=[ev1])
         h2 = HistoryEntry(value="MongoDB", status=ItemStatus.CONFIRMED, role="confirms", evidence=[ev2])
 
-        # 1. Confirmed decision
+        # 1. Confirmed decision without needs_review
         d_confirmed = Decision(
             item_id="D001",
             topic="Database",
             final_value="MongoDB",
             status=ItemStatus.CONFIRMED,
+            needs_review=False,
             history=[h1, h2],
         )
 
-        # 2. Unresolved decision
-        d_unresolved = Decision(
+        # 2. Confirmed decision with needs_review=True (must remain in Decisions)
+        d_confirmed_review = Decision(
             item_id="D002",
-            topic="Ngân sách",
-            final_value="Chưa chốt",
-            status=ItemStatus.UNRESOLVED,
+            topic="Frontend Framework",
+            final_value="Next.js",
+            status=ItemStatus.CONFIRMED,
+            needs_review=True,
             history=[],
         )
 
-        # 3. Needs review decision
-        d_review = Decision(
+        # 3. Decision with status=NEEDS_REVIEW (must remain in Decisions with needs_review=True)
+        d_review_status = Decision(
             item_id="D003",
             topic="Cloud provider",
             final_value="AWS hay GCP",
@@ -94,11 +96,20 @@ class TestMapper(unittest.TestCase):
             history=[],
         )
 
-        # 4. Superseded decision
-        d_superseded = Decision(
+        # 4. Unresolved decision (must route to Unresolved)
+        d_unresolved = Decision(
             item_id="D004",
-            topic="Old architecture",
-            final_value="Monolith",
+            topic="Ngân sách",
+            final_value="Chưa chốt",
+            status=ItemStatus.UNRESOLVED,
+            history=[],
+        )
+
+        # 5. Superseded decision (preserved in history, omitted from top-level)
+        d_superseded = Decision(
+            item_id="D005",
+            topic="Database",
+            final_value="Postgres",
             status=ItemStatus.SUPERSEDED,
             history=[],
         )
@@ -106,25 +117,40 @@ class TestMapper(unittest.TestCase):
         resolved = ResolvedResult(
             meeting_summary="Summary",
             participants=self.participants,
-            decisions=[d_confirmed, d_unresolved, d_review, d_superseded],
+            decisions=[d_confirmed, d_confirmed_review, d_review_status, d_unresolved, d_superseded],
         )
 
         public_out = map_to_public(resolved)
 
-        # Only confirmed goes to public decisions
-        self.assertEqual(len(public_out.decisions), 1)
-        self.assertEqual(public_out.decisions[0].content, "MongoDB")
-        self.assertEqual(public_out.decisions[0].proposed_by, "Lan")
-        self.assertEqual(public_out.decisions[0].confirmed_by, "Tuấn")
+        # Confirmed decisions (with or without needs_review) remain in public decisions
+        self.assertEqual(len(public_out.decisions), 3)
+        
+        # Check D001
+        dec_d001 = next(d for d in public_out.decisions if d.source_ref == "D001")
+        self.assertEqual(dec_d001.content, "MongoDB")
+        self.assertEqual(dec_d001.proposed_by, "Lan")
+        self.assertEqual(dec_d001.confirmed_by, "Tuấn")
+        self.assertEqual(dec_d001.status, "confirmed")
+        self.assertFalse(dec_d001.needs_review)
 
-        # Unresolved and needs_review go to public unresolved (open_decision)
+        # Check D002 (confirmed with needs_review=True)
+        dec_d002 = next(d for d in public_out.decisions if d.source_ref == "D002")
+        self.assertEqual(dec_d002.content, "Next.js")
+        self.assertEqual(dec_d002.status, "confirmed")
+        self.assertTrue(dec_d002.needs_review)
+
+        # Check D003 (status=NEEDS_REVIEW remains in Decisions)
+        dec_d003 = next(d for d in public_out.decisions if d.source_ref == "D003")
+        self.assertEqual(dec_d003.status, "confirmed")
+        self.assertTrue(dec_d003.needs_review)
+
+        # Only unresolved routes to public unresolved
         unres_open = [u for u in public_out.unresolved if u.kind == "open_decision"]
-        self.assertEqual(len(unres_open), 2)
-        review_item = next(u for u in unres_open if u.source_ref == "D003")
-        self.assertTrue(review_item.needs_review)
+        self.assertEqual(len(unres_open), 1)
+        self.assertEqual(unres_open[0].source_ref, "D004")
 
-        # Superseded is omitted from top-level
-        self.assertNotIn("D004", [d.source_ref for d in public_out.decisions])
+        # Superseded is omitted from top-level decisions
+        self.assertNotIn("D005", [d.source_ref for d in public_out.decisions])
 
     def test_map_action_items_confirmed_vs_downgrade(self):
         transcript = "[U005] Tuấn: Lan làm database nhé\n[U006] Lan: Vâng, em nhận việc này"

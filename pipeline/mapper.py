@@ -244,7 +244,9 @@ def map_to_public(
         for h in d.history:
             all_ev.extend(h.evidence)
 
-        if d.status == ItemStatus.CONFIRMED:
+        if d.status in (ItemStatus.CONFIRMED, ItemStatus.NEEDS_REVIEW):
+            # A decision with status confirmed (or quality flag needs_review) must remain in Decisions
+            is_review = bool(d.needs_review or (d.status == ItemStatus.NEEDS_REVIEW))
             public_decisions.append(
                 PublicDecision(
                     source_ref=d.item_id,
@@ -252,26 +254,11 @@ def map_to_public(
                     content=d.final_value,
                     proposed_by=prop_by,
                     confirmed_by=conf_by,
+                    status="confirmed",
+                    condition=getattr(d, "condition", None),
                     evidence=all_ev,
                     history=d.history,
-                    needs_review=d.needs_review,
-                )
-            )
-        elif d.status == ItemStatus.NEEDS_REVIEW:
-            # Route needs_review decisions to Unresolved with needs_review=True
-            needs_review_decision_count += 1
-            logger.info(
-                f"[Mapper] Decision '{d.item_id}' ({d.topic}) has status needs_review. "
-                "Routing to Unresolved (open_decision)."
-            )
-            public_unresolved.append(
-                PublicUnresolvedItem(
-                    source_ref=d.item_id,
-                    kind="open_decision",
-                    content=f"Quyết định cần xem xét: {d.final_value or d.topic}",
-                    reason_unresolved="AI thiếu bằng chứng chắc chắn để xác nhận, cần con người kiểm tra.",
-                    evidence=all_ev,
-                    needs_review=True,
+                    needs_review=is_review,
                 )
             )
         elif d.status == ItemStatus.UNRESOLVED:
@@ -286,7 +273,22 @@ def map_to_public(
                 )
             )
         elif d.status == ItemStatus.SUPERSEDED:
-            # Superseded decisions appear only inside history of their topic, never top-level
+            # Preserve superseded decisions in decision history if matching confirmed decision exists
+            matching_decision = next(
+                (cd for cd in public_decisions if cd.topic.strip().lower() == d.topic.strip().lower()),
+                None
+            )
+            if matching_decision:
+                if not any(h.value == d.final_value for h in matching_decision.history):
+                    matching_decision.history.insert(
+                        0,
+                        HistoryEntry(
+                            value=d.final_value,
+                            status=ItemStatus.SUPERSEDED,
+                            speaker=prop_by or conf_by,
+                            evidence=all_ev,
+                        )
+                    )
             logger.debug(f"[Mapper] Decision '{d.item_id}' is superseded. Omitting from top-level decisions.")
 
     if needs_review_decision_count > 0:
