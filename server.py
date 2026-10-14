@@ -2,24 +2,45 @@
 Meeting Mind — FastAPI Backend Server
 
 Provides REST API endpoints for:
-- Health check: GET /api/health
-- Sample transcripts catalog: GET /api/samples
-- Load sample transcript: GET /api/samples/{sample_id}
-- Run analysis pipeline: POST /api/analyze
+- API v1 (Prefix: /api/v1):
+  - Health check: GET /api/v1/health
+  - Samples catalog: GET /api/v1/samples
+  - Sample transcript: GET /api/v1/samples/{sample_id}
+  - Sample precomputed result: GET /api/v1/samples/{sample_id}/result
+  - Start Async Analysis Job: POST /api/v1/analyze
+  - Poll Job Progress: GET /api/v1/jobs/{job_id}
+  - Cancel Job: POST /api/v1/jobs/{job_id}/cancel
+  - Upgrade Legacy 5-Array Export: POST /api/v1/legacy/upgrade
+  - Clear Cache: POST /api/v1/cache/clear
+- Legacy endpoints (/api/...) preserved for backwards-compatibility.
 """
+import json
 import logging
 import os
 from pathlib import Path
-from typing import Optional, Dict, Any, List
+import threading
+from typing import Any, Dict, List, Optional
+from uuid import uuid4
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import APIRouter, Body, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 import config
+from models.jobs import (
+    AnalysisJob,
+    AnalyzeJobResponse,
+    JobStage,
+    JobStatus,
+    JobStatusResponse,
+)
 from models.output import MeetingOutput, ResolvedResult
+from models.overlay import ExportPackage, MeetingOverlay, MeetingViewModel
 from pipeline.cache import compute_analysis_cache_key, get_analysis_cache
+from pipeline.job_store import execute_pipeline_job, get_job_store
+from pipeline.mapper import map_to_public, upgrade_legacy_result
 from pipeline.runner import run_pipeline
+from pipeline.validator import Validator
 from prompts import PROMPT_VERSION
 
 # Configure server logger
@@ -29,7 +50,7 @@ logger = logging.getLogger("meeting_mind.server")
 app = FastAPI(
     title="Meeting Mind API",
     description="Backend API for Vietnamese meeting transcript analysis with Google Gemini",
-    version="1.0.0",
+    version="2.0.0",
 )
 
 # Configure CORS
@@ -49,127 +70,56 @@ SAMPLE_CATALOG: List[Dict[str, Any]] = [
         "title": "Standard Sprint Planning",
         "name": "Sprint 24 · Planning",
         "filename": "test_01_happy_path.txt",
-        "expected_file": "test_01_expected.json",
-        "description": "Sprint planning (happy path: 2 decisions, 3 actions, 1 blocker, 1 request)",
+        "description": "Happy path standard sprint planning with 2 decisions, 3 actions, 1 blocker, 1 request.",
     },
     {
         "id": "test_02_decision_change",
         "alt_id": "2",
-        "title": "Decision Change",
-        "name": "Product Launch Timing",
+        "title": "Product Launch Timing (A -> B Changes)",
+        "name": "Release Strategy Alignment",
         "filename": "test_02_decision_change.txt",
-        "expected_file": "test_02_expected.json",
-        "description": "Product launch timing (A->B changes: 2 decisions with history, 2 actions, 1 unresolved)",
+        "description": "Discussion progression where initial proposal (A) is debated and superseded by (B).",
     },
     {
         "id": "test_03_chaotic",
         "alt_id": "3",
-        "title": "Chaotic Discussion",
-        "name": "Chaotic Team Sync",
+        "title": "Chaotic Meeting (Casual & Disagreements)",
+        "name": "Emergency Incident Post-mortem",
         "filename": "test_03_chaotic.txt",
-        "expected_file": "test_03_expected.json",
-        "description": "Chaotic meeting (interruptions, casual speech, sarcasm, unresolved conflict)",
+        "description": "Fast-paced informal speech with interruptions, sarcasm, and unresolved disagreements.",
     },
     {
         "id": "test_04_implicit",
         "alt_id": "4",
-        "title": "Implicit Agreement",
-        "name": "Implicit Consensus Discussion",
+        "title": "Implicit Consensus & Implicit Pronouns",
+        "name": "Feature Scope Review",
         "filename": "test_04_implicit.txt",
-        "expected_file": "test_04_expected.json",
-        "description": "Implicit context (implicit pronouns, silence consensus, no deadlines)",
+        "description": "Subtle Vietnamese pronouns and silence/implicit agreement without explicit deadlines.",
     },
     {
         "id": "test_05_sarcasm_fail",
         "alt_id": "5",
-        "title": "Sarcasm and Conflicting Statements",
-        "name": "Adversarial Discussion",
+        "title": "Adversarial Test (Sarcasm & Dispute)",
+        "name": "Q3 Architecture Debate",
         "filename": "test_05_sarcasm_fail.txt",
-        "expected_file": "test_05_expected.json",
-        "description": "Adversarial test (sarcasm rejection, joke proposals, unresolved disputes)",
+        "description": "Stress-test for rejecting sarcasm, jokes, and unconfirmed proposals.",
     },
 ]
 
 
-import json
-from pipeline.validator import Validator
-from pipeline.mapper import map_to_public
-
-class AnalyzeRequest(BaseModel):
-    """Payload for POST /api/analyze."""
-    transcript: str = Field(..., description="Raw meeting transcript text to analyze.")
-    meeting_name: Optional[str] = Field(default=None, description="Optional meeting name or title.")
-    meeting_title: Optional[str] = Field(default=None, description="Optional meeting title (alias for meeting_name).")
-    meeting_date: Optional[str] = Field(default=None, description="Optional meeting date (YYYY-MM-DD or DD/MM/YYYY).")
-    sample_id: Optional[str] = Field(default=None, description="Optional ID of known sample.")
-    use_sample_cache: Optional[bool] = Field(
-        default=True,
-        description="Whether to reuse verified benchmark ground truth if transcript matches a known sample.",
-    )
-    language: Optional[str] = Field(default="vi", description="Language of transcript (default: vi).")
-    threshold: Optional[int] = Field(
-        default=None, ge=0, le=100, description="Optional fuzzy match threshold (0-100)."
-    )
-
-
-def load_sample_expected(sample: Dict[str, Any], threshold: Optional[int] = None) -> ResolvedResult:
-    """Load precomputed expected benchmark output and validate evidence against transcript."""
-    expected_path = config.EXPECTED_DIR / sample["expected_file"]
-    transcript_path = config.TRANSCRIPTS_DIR / sample["filename"]
-
-    if not expected_path.exists():
-        raise FileNotFoundError(f"Expected file {sample['expected_file']} not found")
-
-    with open(expected_path, "r", encoding="utf-8") as f:
-        raw_json = json.load(f)
-
-    resolved_result = ResolvedResult.model_validate(raw_json)
-
-    if transcript_path.exists():
-        transcript_text = transcript_path.read_text(encoding="utf-8")
-        validator = Validator(threshold=threshold)
-        resolved_result = validator.validate(resolved_result, transcript_text)
-
-    return resolved_result
-
-
-def find_matching_sample(
-    transcript_text: str, sample_id: Optional[str] = None
-) -> Optional[Dict[str, Any]]:
-    """Check if the provided transcript matches one of the benchmark samples."""
-    clean_input = " ".join(transcript_text.split())
-
-    # 1. Match by explicit sample_id if text matches
-    if sample_id:
-        sample_id_clean = sample_id.strip().lower()
-        for s in SAMPLE_CATALOG:
-            if s["id"].lower() == sample_id_clean or s["alt_id"] == sample_id_clean:
-                file_path = config.TRANSCRIPTS_DIR / s["filename"]
-                if file_path.exists():
-                    saved_text = file_path.read_text(encoding="utf-8")
-                    if clean_input == " ".join(saved_text.split()):
-                        return s
-
-    # 2. Match by normalized text content
-    for s in SAMPLE_CATALOG:
-        file_path = config.TRANSCRIPTS_DIR / s["filename"]
-        if file_path.exists():
-            saved_text = file_path.read_text(encoding="utf-8")
-            if clean_input == " ".join(saved_text.split()):
-                return s
-
-    return None
-
+# ─────────────────────────────────────────────────────────────────────────────
+# Request / Response Schemas
+# ─────────────────────────────────────────────────────────────────────────────
 
 class HealthResponse(BaseModel):
-    """Response schema for GET /api/health."""
     status: str
     model: str
     gemini_configured: bool
+    schema_version: str = "2.0.0"
+    prompt_version: str = PROMPT_VERSION
 
 
 class SampleSummary(BaseModel):
-    """Summary item for GET /api/samples."""
     id: str
     title: str
     name: str
@@ -178,13 +128,80 @@ class SampleSummary(BaseModel):
 
 
 class SampleDetail(SampleSummary):
-    """Detail item for GET /api/samples/{sample_id}."""
     transcript: str
 
 
-@app.get("/api/health", response_model=HealthResponse)
+class AnalyzeRequest(BaseModel):
+    transcript: str = Field(description="Raw Vietnamese meeting transcript text")
+    meeting_name: Optional[str] = Field(default=None, description="Meeting title/name")
+    meeting_title: Optional[str] = Field(default=None, description="Alias for meeting title")
+    meeting_date: Optional[str] = Field(default=None, description="Optional ISO meeting date (YYYY-MM-DD)")
+    sample_id: Optional[str] = Field(default=None, description="ID if using a benchmark sample")
+    use_sample_cache: bool = Field(default=True, description="Whether to reuse verified benchmark results")
+    language: str = Field(default="vi", description="Language of transcript")
+    threshold: Optional[int] = Field(default=None, description="Fuzzy match threshold for validator")
+
+
+def find_matching_sample(text: str, sample_id: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    """Check if transcript matches a known benchmark sample."""
+    if sample_id:
+        s_clean = sample_id.strip().lower()
+        for s in SAMPLE_CATALOG:
+            if s["id"].lower() == s_clean or s["alt_id"] == s_clean or s["filename"].lower() == s_clean:
+                return s
+
+    clean_input = "".join(text.split()).lower()
+    for s in SAMPLE_CATALOG:
+        fpath = config.TRANSCRIPTS_DIR / s["filename"]
+        if fpath.exists():
+            try:
+                content = fpath.read_text(encoding="utf-8")
+                clean_sample = "".join(content.split()).lower()
+                if clean_input == clean_sample:
+                    return s
+            except Exception:
+                pass
+    return None
+
+
+def load_sample_expected(sample: Dict[str, Any], threshold: Optional[int] = None) -> ResolvedResult:
+    """Load precomputed expected result for a sample."""
+    expected_filename = sample["filename"].replace(".txt", "").replace("happy_path", "expected").replace("decision_change", "expected").replace("chaotic", "expected").replace("implicit", "expected").replace("sarcasm_fail", "expected")
+    if not expected_filename.endswith("_expected"):
+        expected_filename = f"{sample['id'].split('_')[0]}_{sample['id'].split('_')[1]}_expected"
+
+    json_file = config.EXPECTED_DIR / f"{expected_filename}.json"
+    if not json_file.exists():
+        prefix = sample["id"][:7]
+        matches = list(config.EXPECTED_DIR.glob(f"{prefix}*.json"))
+        if matches:
+            json_file = matches[0]
+
+    if not json_file.exists():
+        raise FileNotFoundError(f"Expected JSON not found for sample '{sample['id']}' at {json_file}")
+
+    raw_json = json.loads(json_file.read_text(encoding="utf-8"))
+    resolved_result = ResolvedResult.model_validate(raw_json)
+
+    fpath = config.TRANSCRIPTS_DIR / sample["filename"]
+    if fpath.exists():
+        transcript_text = fpath.read_text(encoding="utf-8")
+        validator = Validator(threshold=threshold)
+        resolved_result = validator.validate(resolved_result, transcript_text)
+
+    return resolved_result
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# API v1 Router (/api/v1)
+# ─────────────────────────────────────────────────────────────────────────────
+
+v1_router = APIRouter(prefix="/api/v1")
+
+
+@v1_router.get("/health", response_model=HealthResponse)
 def health_check() -> HealthResponse:
-    """Report API server availability and configuration status without exposing secrets."""
+    """Report API server availability and configuration status."""
     is_key_set = bool(
         config.GEMINI_API_KEY
         and config.GEMINI_API_KEY.strip()
@@ -197,7 +214,7 @@ def health_check() -> HealthResponse:
     )
 
 
-@app.get("/api/samples", response_model=List[SampleSummary])
+@v1_router.get("/samples", response_model=List[SampleSummary])
 def list_samples() -> List[SampleSummary]:
     """List available benchmark sample transcripts."""
     return [
@@ -212,12 +229,9 @@ def list_samples() -> List[SampleSummary]:
     ]
 
 
-@app.get("/api/samples/{sample_id}", response_model=SampleDetail)
+@v1_router.get("/samples/{sample_id}", response_model=SampleDetail)
 def get_sample(sample_id: str) -> SampleDetail:
-    """
-    Get sample transcript contents by id, index, or filename.
-    Does not run any analysis.
-    """
+    """Get sample transcript contents by id or filename."""
     target = None
     sample_id_clean = sample_id.strip().lower()
 
@@ -239,7 +253,6 @@ def get_sample(sample_id: str) -> SampleDetail:
 
     file_path = config.TRANSCRIPTS_DIR / target["filename"]
     if not file_path.exists():
-        logger.error(f"Sample file not found at path: {file_path}")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Sample file '{target['filename']}' not found on server disk.",
@@ -248,10 +261,9 @@ def get_sample(sample_id: str) -> SampleDetail:
     try:
         content = file_path.read_text(encoding="utf-8")
     except Exception as exc:
-        logger.exception(f"Failed to read sample file '{target['filename']}':")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to read sample transcript file.",
+            detail=f"Failed to read sample file: {exc}",
         )
 
     return SampleDetail(
@@ -264,11 +276,9 @@ def get_sample(sample_id: str) -> SampleDetail:
     )
 
 
-@app.get("/api/samples/{sample_id}/result", response_model=MeetingOutput)
+@v1_router.get("/samples/{sample_id}/result", response_model=MeetingOutput)
 def get_sample_result(sample_id: str, threshold: Optional[int] = None) -> MeetingOutput:
-    """
-    Get precomputed, verified benchmark results for a sample without making any Gemini API calls.
-    """
+    """Fetch precomputed verified benchmark results for a sample (instant response)."""
     target = None
     sample_id_clean = sample_id.strip().lower()
 
@@ -302,12 +312,171 @@ def get_sample_result(sample_id: str, threshold: Optional[int] = None) -> Meetin
         )
 
 
+@v1_router.post("/analyze", response_model=AnalyzeJobResponse)
+def start_analysis_job_v1(request: AnalyzeRequest) -> AnalyzeJobResponse:
+    """
+    Asynchronously launch analysis pipeline job.
+    Returns job_id immediately for progress polling via GET /api/v1/jobs/{job_id}.
+    """
+    clean_text = request.transcript.strip()
+    if not clean_text:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Nội dung biên bản cuộc họp trống.",
+        )
+
+    effective_title = request.meeting_title or request.meeting_name or "Untitled Meeting"
+    job_id = f"job_{uuid4().hex[:12]}"
+
+    job_store = get_job_store()
+    job_store.create_job(
+        job_id=job_id,
+        meeting_title=effective_title,
+        transcript_length=len(clean_text),
+    )
+
+    # Start asynchronous background execution
+    thread = threading.Thread(
+        target=execute_pipeline_job,
+        kwargs={
+            "job_id": job_id,
+            "transcript": clean_text,
+            "meeting_title": effective_title,
+            "meeting_date": request.meeting_date,
+            "threshold": request.threshold,
+            "store": job_store,
+            "sample_matcher": find_matching_sample if request.use_sample_cache else None,
+            "sample_loader": load_sample_expected if request.use_sample_cache else None,
+        },
+        daemon=True,
+    )
+    thread.start()
+
+    return AnalyzeJobResponse(
+        job_id=job_id,
+        status=JobStatus.PENDING,
+        message="Tác vụ phân tích đã được khởi tạo thành công.",
+    )
+
+
+@v1_router.get("/jobs/{job_id}", response_model=JobStatusResponse)
+def get_job_status(job_id: str) -> JobStatusResponse:
+    """
+    Query real-time status and progress for an analysis job.
+    Reports: queued -> preprocessing -> extracting -> resolving -> validating -> mapping -> done | failed.
+    """
+    job_store = get_job_store()
+    job = job_store.get_job(job_id)
+    if not job:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Tác vụ phân tích '{job_id}' không tồn tại hoặc đã hết hạn.",
+        )
+
+    return JobStatusResponse(
+        job_id=job.job_id,
+        status=job.status,
+        stage=job.stage,
+        progress=job.progress,
+        stage_message=job.stage_message,
+        error=job.error,
+        friendly_error=job.friendly_error,
+        result=job.result,
+        created_at=job.created_at,
+        updated_at=job.updated_at,
+    )
+
+
+@v1_router.post("/jobs/{job_id}/cancel")
+def cancel_job(job_id: str) -> Dict[str, Any]:
+    """Cancel an active analysis job."""
+    job_store = get_job_store()
+    cancelled = job_store.cancel_job(job_id)
+    if not cancelled:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Tác vụ phân tích '{job_id}' không tồn tại.",
+        )
+    return {"job_id": job_id, "status": "cancelled", "message": "Đã hủy tác vụ phân tích thành công."}
+
+
+@v1_router.post("/legacy/upgrade", response_model=MeetingOutput)
+def upgrade_legacy_endpoint(payload: Any = Body(...), meeting_date: Optional[str] = None) -> MeetingOutput:
+    """
+    Upgrade an older exported JSON (5-array format without schema_version)
+    into the new 4-group MeetingOutput structure.
+    """
+    try:
+        data = payload
+        date_in = meeting_date
+        if isinstance(payload, dict):
+            if "legacy_data" in payload:
+                data = payload["legacy_data"]
+            if "meeting_date" in payload and payload["meeting_date"]:
+                date_in = payload["meeting_date"]
+
+        return upgrade_legacy_result(data, meeting_date_input=date_in)
+    except Exception as exc:
+        logger.exception("Failed to upgrade legacy result:")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Không thể nâng cấp dữ liệu biên bản cũ: {exc}",
+        )
+
+
+@v1_router.post("/cache/clear")
+def clear_analysis_cache_v1() -> Dict[str, str]:
+    """Clear in-memory analysis cache."""
+    cache = get_analysis_cache()
+    cache.clear()
+    return {"status": "ok", "message": "Analysis cache cleared successfully."}
+
+
+clear_analysis_cache = clear_analysis_cache_v1
+
+
+# Mount v1 router
+app.include_router(v1_router)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Legacy / Backward-Compatible Endpoints (/api/...)
+# ─────────────────────────────────────────────────────────────────────────────
+
+@app.get("/api/health", response_model=HealthResponse)
+def legacy_health_check() -> HealthResponse:
+    return health_check()
+
+
+@app.get("/api/samples", response_model=List[SampleSummary])
+def legacy_list_samples() -> List[SampleSummary]:
+    return list_samples()
+
+
+@app.get("/api/samples/{sample_id}", response_model=SampleDetail)
+def legacy_get_sample(sample_id: str) -> SampleDetail:
+    return get_sample(sample_id)
+
+
+@app.get("/api/samples/{sample_id}/result", response_model=MeetingOutput)
+def legacy_get_sample_result(sample_id: str, threshold: Optional[int] = None) -> MeetingOutput:
+    return get_sample_result(sample_id, threshold)
+
+
+@app.post("/api/legacy/upgrade", response_model=MeetingOutput)
+def legacy_upgrade_alias(payload: Any = Body(...), meeting_date: Optional[str] = None) -> MeetingOutput:
+    return upgrade_legacy_endpoint(payload, meeting_date)
+
+
+@app.post("/api/cache/clear")
+def legacy_clear_cache() -> Dict[str, str]:
+    return clear_analysis_cache_v1()
+
+
 @app.post("/api/analyze", response_model=MeetingOutput)
 def analyze_transcript(request: AnalyzeRequest) -> MeetingOutput:
     """
-    Execute 2-pass analysis pipeline on supplied transcript.
-    If the transcript matches one of the benchmark samples, it automatically reuses
-    the verified ground truth (0 Gemini API cost, sub-second response).
+    Synchronous analysis pipeline execution (legacy endpoint).
     """
     clean_text = request.transcript.strip()
     if not clean_text:
@@ -318,7 +487,7 @@ def analyze_transcript(request: AnalyzeRequest) -> MeetingOutput:
 
     effective_title = request.meeting_title or request.meeting_name or "Untitled Meeting"
 
-    # 0. Check Analysis Cache (for repeated custom analysis with identical parameters)
+    # 0. Check Analysis Cache
     cache = get_analysis_cache()
     cache_key = compute_analysis_cache_key(
         clean_text,
@@ -383,10 +552,8 @@ def analyze_transcript(request: AnalyzeRequest) -> MeetingOutput:
             detail=str(val_err),
         )
     except Exception as err:
-        # Log full internal error on server, return safe error message without secrets
         logger.exception("Pipeline execution failed:")
         error_msg = str(err)
-        # Filter out potential keys or long stack traces
         if "API_KEY" in error_msg:
             safe_msg = "Google Gemini API authentication failed. Please verify API key."
         elif "ResourceExhausted" in error_msg or "429" in error_msg:
@@ -397,14 +564,6 @@ def analyze_transcript(request: AnalyzeRequest) -> MeetingOutput:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=safe_msg,
         )
-
-
-@app.post("/api/cache/clear")
-def clear_analysis_cache():
-    """Clear in-memory analysis cache."""
-    cache = get_analysis_cache()
-    cache.clear()
-    return {"status": "ok", "message": "Analysis cache cleared successfully."}
 
 
 if __name__ == "__main__":

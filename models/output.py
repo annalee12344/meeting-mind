@@ -9,7 +9,7 @@ Contains:
 """
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, List, Literal, Optional
+from typing import Any, List, Literal, Optional, Tuple
 from uuid import uuid4
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -55,13 +55,22 @@ def _normalize_item_status(v: Any) -> ItemStatus:
     return ItemStatus.UNRESOLVED
 
 
+def generate_uuid() -> str:
+    """Generate a stable standard UUID4 string for items and evidence."""
+    return str(uuid4())
+
+
 class Evidence(BaseModel):
     """A piece of evidence linking back to the original transcript."""
+    id: str = Field(default_factory=generate_uuid, description="Unique evidence UUID")
     speaker: str
     timestamp: Optional[str] = None
     quote: str = Field(description="Exact quote from transcript")
     utterance_id: Optional[str] = Field(
         default=None, description="Reference to extracted utterance ID from Step 1"
+    )
+    line_range: Optional[Tuple[int, int]] = Field(
+        default=None, description="Start and end line numbers in transcript"
     )
     verified: bool = Field(
         default=False,
@@ -191,9 +200,21 @@ InternalMeetingOutput = ResolvedResult
 # 3. Public Output Models (Section 1: 4 Target Groups + Metadata)
 # ─────────────────────────────────────────────────────────────────────────────
 
-def generate_uuid() -> str:
-    """Generate a stable standard UUID4 string for public items."""
-    return str(uuid4())
+class IssueNote(BaseModel):
+    """A user note attached to an issue."""
+    id: str = Field(default_factory=generate_uuid, description="Unique note UUID")
+    issue_id: str = Field(description="Referenced issue UUID")
+    author_id: str = Field(default="user_local", description="Author identifier")
+    author_name: str = Field(default="You", description="Author display name")
+    content: str = Field(description="Note content text")
+    created_at: str = Field(
+        default_factory=lambda: datetime.now(timezone.utc).isoformat(),
+        description="ISO 8601 creation timestamp",
+    )
+    updated_at: str = Field(
+        default_factory=lambda: datetime.now(timezone.utc).isoformat(),
+        description="ISO 8601 last update timestamp",
+    )
 
 
 class PublicDecision(BaseModel):
@@ -252,6 +273,7 @@ class PublicIssue(BaseModel):
     owner: Optional[str] = None
     status: Literal["open", "resolved"] = "open"
     evidence: list[Evidence] = Field(default_factory=list)
+    notes: list[IssueNote] = Field(default_factory=list, description="User notes on this issue")
     needs_review: bool = False
 
 
