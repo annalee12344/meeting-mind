@@ -43,6 +43,8 @@ meeting-muse-56/.output/
 meeting-muse-56/.vinxi/
 meeting-muse-56/.tanstack/
 meeting-muse-56/.nitro/
+meeting-muse-56/.vercel/
+.vercel/
 meeting-muse-56/*.local
 
 # OS / IDE
