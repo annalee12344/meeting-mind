@@ -18,9 +18,9 @@ develop-eggs/
 dist/
 downloads/
 eggs/
-.eggs/
-lib/
-lib64/
+/lib/
+/lib64/
+!meeting-muse-56/src/lib/
 parts/
 sdist/
 var/

@@ -1,0 +1,183 @@
+{
+  "meeting_summary": "Cuộc họp Sprint Planning cho Sprint 24 chốt mục tiêu triển khai tích hợp thanh toán QR code VNPay và cải tiến UI giỏ hàng. Nhóm thống nhất lịch code freeze vào 17:00 ngày 24/10 để QA kiểm thử trước khi release, đồng thời phân công nhiệm vụ cụ thể cho từng thành viên và ghi nhận một blocker từ đối tác cung cấp API.",
+  "participants": [
+    "Minh",
+    "Lan",
+    "Tuấn",
+    "Hương"
+  ],
+  "decisions": [
+    {
+      "item_id": "D001",
+      "topic": "Phạm vi Sprint 24 (Sprint Scope)",
+      "final_value": "Triển khai tích hợp thanh toán QR code qua cổng VNPay và nâng cấp UI giỏ hàng, hoãn tính năng tích điểm sang Sprint 25",
+      "status": "confirmed",
+      "condition": null,
+      "history": [
+        {
+          "value": "Triển khai tích hợp thanh toán QR code qua cổng VNPay và nâng cấp UI giỏ hàng, hoãn tính năng tích điểm sang Sprint 25",
+          "status": "confirmed",
+          "evidence": [
+            {
+              "speaker": "Minh",
+              "timestamp": "09:07",
+              "quote": "Vậy việc đầu tiên, chúng ta thống nhất phạm vi của Sprint 24 nhé: Sprint này team sẽ tập trung toàn lực triển khai tích hợp thanh toán QR code qua cổng VNPay và nâng cấp UI luồng giỏ hàng, tạm hoãn tính năng tích điểm sang Sprint 25. Cả team đồng ý không?",
+              "utterance_id": null,
+              "verified": false
+            },
+            {
+              "speaker": "Lan",
+              "timestamp": "09:09",
+              "quote": "Em đồng ý chốt phạm vi này, như vậy tải công việc của dev mới khả thi trong 2 tuần.",
+              "utterance_id": null,
+              "verified": false
+            }
+          ]
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "item_id": "D002",
+      "topic": "Lịch code freeze và quy ước release Sprint 24",
+      "final_value": "Code freeze vào 17:00 ngày 24/10 và QA chạy regression test ngày 25/10 trước khi deploy production vào sáng thứ Bảy",
+      "status": "confirmed",
+      "condition": null,
+      "history": [
+        {
+          "value": "Code freeze vào 17:00 ngày 24/10 và QA chạy regression test ngày 25/10 trước khi deploy production vào sáng thứ Bảy",
+          "status": "confirmed",
+          "evidence": [
+            {
+              "speaker": "Minh",
+              "timestamp": "09:11",
+              "quote": "Tiếp theo, về quy ước tiến độ và release, anh đề xuất là chúng ta giữ quy tắc code freeze vào 17:00 chiều thứ Năm tuần sau ngày 24 tháng 10. Sau đó QA có trọn vẹn 1 ngày thứ Sáu để chạy regression test trước khi deploy production vào sáng thứ Bảy.",
+              "utterance_id": null,
+              "verified": false
+            },
+            {
+              "speaker": "Minh",
+              "timestamp": "09:15",
+              "quote": "Tuyệt vời, vậy chốt luôn quyết định thứ hai: Code freeze đúng 17:00 ngày 24 tháng 10 và QA test regression vào 25 tháng 10.",
+              "utterance_id": null,
+              "verified": false
+            }
+          ]
+        }
+      ],
+      "needs_review": false
+    }
+  ],
+  "action_items": [
+    {
+      "item_id": "A001",
+      "task": "Hoàn thiện Figma design specs chi tiết và xuất bộ design tokens cho giỏ hàng mới",
+      "assignee": "Tuấn",
+      "deadline": "12:00 ngày 18/10",
+      "dependencies": [],
+      "evidence": [
+        {
+          "speaker": "Minh",
+          "timestamp": "09:17",
+          "quote": "Tuấn cần hoàn thiện file Figma design specs chi tiết và xuất bộ design tokens cho giỏ hàng mới. Hạn chót cho Tuấn là 12:00 trưa thứ Sáu ngày 18 tháng 10 nhé.",
+          "utterance_id": null,
+          "verified": false
+        },
+        {
+          "speaker": "Tuấn",
+          "timestamp": "09:18",
+          "quote": "Em sẽ bàn giao link Figma kèm component specs đầy đủ cho Lan trước 12:00 ngày 18/10 để dev kịp dựng layout.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "item_id": "A002",
+      "task": "Tích hợp SDK VNPay, viết API endpoints và xử lý webhook callback từ cổng thanh toán",
+      "assignee": "Lan",
+      "deadline": "17:00 ngày 22/10",
+      "dependencies": [],
+      "evidence": [
+        {
+          "speaker": "Minh",
+          "timestamp": "09:20",
+          "quote": "Lan ghi nhận nhé. Task tiếp theo của Lan là tích hợp SDK VNPay, viết các API endpoints và xử lý webhook callback từ cổng thanh toán. Deadline cho Lan là 17:00 ngày 22 tháng 10 để bàn giao bản test cho Hương.",
+          "utterance_id": null,
+          "verified": false
+        },
+        {
+          "speaker": "Lan",
+          "timestamp": "09:21",
+          "quote": "Vâng, em nhận task tích hợp SDK và webhook VNPay, cam kết xong trước 17:00 ngày 22/10.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "item_id": "A003",
+      "task": "Xây dựng test cases chi tiết cho luồng quét mã QR và ma trận test trên thiết bị iOS, Android",
+      "assignee": "Hương",
+      "deadline": "Trước 21/10",
+      "dependencies": [],
+      "evidence": [
+        {
+          "speaker": "Minh",
+          "timestamp": "09:28",
+          "quote": "Task của Hương là xây dựng bộ test cases chi tiết cho luồng quét mã QR, bao gồm cả ma trận test trên các thiết bị iOS, Android và các tình huống mạng chập chờn. Hạn hoàn thành test cases cho Hương là cuối ngày thứ Hai 21 tháng 10 nhé.",
+          "utterance_id": null,
+          "verified": false
+        },
+        {
+          "speaker": "Hương",
+          "timestamp": "09:30",
+          "quote": "Vâng, em nhận task viết test cases và test matrix cho QR payment, deadline trước 21/10.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    }
+  ],
+  "blockers": [
+    {
+      "item_id": "B001",
+      "issue": "Đối tác VNPay chưa cấp tài khoản sandbox và API secret key cho môi trường test dù đã gửi email yêu cầu từ 3 ngày trước",
+      "owner": "Lan",
+      "status": "unresolved",
+      "evidence": [
+        {
+          "speaker": "Lan",
+          "timestamp": "09:24",
+          "quote": "Hiện tại bên đối tác VNPay vẫn chưa gửi lại tài khoản sandbox và API secret key cho môi trường test của team mình, dù em đã gửi email yêu cầu từ 3 ngày trước. Nếu đầu tuần sau chưa có sandbox key thì em chưa thể test thật luồng tạo mã QR được. Em đang tiếp tục gửi email hối thúc họ.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    }
+  ],
+  "requests": [
+    {
+      "item_id": "R001",
+      "type": "request",
+      "content": "Nhờ team DevOps mở whitelist IP và cấu hình mở port cho webhook domain staging trước 10:00 ngày 21/10",
+      "from_person": "Lan",
+      "to_person": "Team DevOps",
+      "evidence": [
+        {
+          "speaker": "Lan",
+          "timestamp": "09:31",
+          "quote": "À anh Minh ơi, em có một yêu cầu nhờ gửi sang team DevOps bên anh Hoàng. Nhờ team DevOps mở whitelist IP và cấu hình port mở cho webhook domain staging trước 10:00 sáng thứ Hai 21/10 để em test nhận callback IPN từ VNPay.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    }
+  ],
+  "unresolved_items": []
+}
