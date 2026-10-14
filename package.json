@@ -1,0 +1,12 @@
+{
+  "name": "meeting-mind-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix meeting-muse-56 run dev",
+    "build": "npm --prefix meeting-muse-56 run build",
+    "test": "npm --prefix meeting-muse-56 run test",
+    "start": "npm --prefix meeting-muse-56 run start",
+    "server": "python server.py"
+  }
+}

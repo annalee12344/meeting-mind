@@ -1,0 +1,121 @@
+{
+  "meeting_summary": "Cuộc họp ngắn bàn về các khúc mắc luồng đăng ký và giao diện. Đề xuất bỏ OTP bị bác bỏ bằng lời mỉa mai, tranh cãi về màu nút Checkout chưa được giải quyết do bị ngắt quãng, câu đùa về việc phát lều ngủ tại văn phòng không phải quyết định thật, và quyết định thực chất duy nhất là yêu cầu team dev đi onsite tại văn phòng khách hàng tuần sau.",
+  "participants": [
+    "Dũng",
+    "Phúc",
+    "Mai"
+  ],
+  "decisions": [
+    {
+      "item_id": "D001",
+      "topic": "Lịch làm việc onsite tại văn phòng khách hàng của team dev",
+      "final_value": "Toàn bộ team dev phải sang làm việc onsite tại văn phòng khách hàng cả tuần từ thứ Hai đến thứ Sáu tuần sau",
+      "status": "confirmed",
+      "condition": null,
+      "history": [
+        {
+          "value": "Toàn bộ team dev phải sang làm việc onsite tại văn phòng khách hàng cả tuần từ thứ Hai đến thứ Sáu tuần sau",
+          "status": "confirmed",
+          "evidence": [
+            {
+              "speaker": "Dũng",
+              "timestamp": "16:16",
+              "quote": "Còn cái lịch làm việc, tuần sau toàn bộ team dev phải sang văn phòng khách hàng ngồi onsite cả tuần từ thứ Hai đến thứ Sáu nhé, bên đối tác họ vừa yêu cầu khẩn cấp sáng nay.",
+              "utterance_id": null,
+              "verified": false
+            },
+            {
+              "speaker": "Dũng",
+              "timestamp": "16:18",
+              "quote": "Ok thế cứ vậy đi, giải tán.",
+              "utterance_id": null,
+              "verified": false
+            }
+          ]
+        }
+      ],
+      "needs_review": true
+    }
+  ],
+  "action_items": [
+    {
+      "item_id": "A001",
+      "task": "Sang làm việc onsite tại văn phòng đối tác từ thứ Hai đến thứ Sáu",
+      "assignee": "Phúc",
+      "deadline": "Thứ Hai tuần sau",
+      "dependencies": [],
+      "evidence": [
+        {
+          "speaker": "Dũng",
+          "timestamp": "16:16",
+          "quote": "Còn cái lịch làm việc, tuần sau toàn bộ team dev phải sang văn phòng khách hàng ngồi onsite cả tuần từ thứ Hai đến thứ Sáu nhé, bên đối tác họ vừa yêu cầu khẩn cấp sáng nay.",
+          "utterance_id": null,
+          "verified": false
+        },
+        {
+          "speaker": "Phúc",
+          "timestamp": "16:17",
+          "quote": "Dạ vâng, sếp nói thì em nghe thôi chứ biết sao giờ, quyền trong tay sếp mà.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": true
+    }
+  ],
+  "blockers": [],
+  "requests": [],
+  "unresolved_items": [
+    {
+      "item_id": "UR001",
+      "topic": "Lựa chọn màu sắc cho nút Checkout (màu đỏ vs màu xanh lá)",
+      "reason_unresolved": "Phúc muốn giữ màu đỏ do dữ liệu A/B test tỉ lệ click cao, còn Mai yêu cầu đổi sang màu xanh lá theo chuẩn nhận diện thương hiệu; hai bên tranh cãi gay gắt và bị Dũng cắt ngang mà chưa có quyết định cuối cùng",
+      "evidence": [
+        {
+          "speaker": "Phúc",
+          "timestamp": "16:09",
+          "quote": "Nhưng màu xanh chìm nghỉm trên nền trắng, nút đỏ mắt người ta mới chú ý click vào chứ. Em test A/B thấy nút đỏ tỉ lệ bấm cao hơn hẳn. Em vẫn giữ màu đỏ.",
+          "utterance_id": null,
+          "verified": false
+        },
+        {
+          "speaker": "Mai",
+          "timestamp": "16:11",
+          "quote": "Em kiên quyết không đồng ý, màu đỏ nhìn như báo lỗi hệ thống, khách hàng người ta sợ không dám bấm. Nhất định phải đổi thành màu xanh lá cây!",
+          "utterance_id": null,
+          "verified": false
+        },
+        {
+          "speaker": "Dũng",
+          "timestamp": "16:12",
+          "quote": "Thôi nhức đầu quá, hai đứa đừng cãi nhau nữa, chuyển sang chuyện khác đi.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "item_id": "UR002",
+      "topic": "Đề xuất loại bỏ bước xác thực OTP và mật khẩu khi đăng nhập",
+      "reason_unresolved": "Ý kiến bị Dũng phản bác bằng giọng điệu mỉa mai châm biếm do nguy cơ bị hacker tấn công, không được chấp thuận",
+      "evidence": [
+        {
+          "speaker": "Phúc",
+          "timestamp": "16:02",
+          "quote": "Anh Dũng ơi, bên user cứ than phiền là bước nhập OTP phức tạp quá, rớt tỉ lệ chuyển đổi. Hay là mình bỏ luôn xác thực OTP với mật khẩu đi, cho người ta nhập mỗi email là đăng nhập thẳng luôn cho tiện?",
+          "utterance_id": null,
+          "verified": false
+        },
+        {
+          "speaker": "Dũng",
+          "timestamp": "16:04",
+          "quote": "Ừ, ý tưởng hay lắm, làm thế đi! Để hacker nó vào nó dọn sạch dữ liệu công ty một thể, tiện quá cơ!",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": true
+    }
+  ]
+}

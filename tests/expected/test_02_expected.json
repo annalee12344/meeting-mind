@@ -1,0 +1,194 @@
+{
+  "meeting_summary": "Cuộc họp điều chỉnh kế hoạch ra mắt sản phẩm đã thống nhất lùi ngày launch từ 15/06 sang 15/07 với điều kiện pass security audit trước 20/06. Về kỹ thuật, team quyết định chuyển từ phương án tự xây in-house sang tích hợp cổng thanh toán đối tác thứ ba cho MVP, đồng thời để ngỏ quyết định lựa chọn database giữa PostgreSQL và MongoDB chờ kết quả benchmark.",
+  "participants": [
+    "Quân",
+    "Đạt",
+    "Mai",
+    "Thảo"
+  ],
+  "decisions": [
+    {
+      "item_id": "D001",
+      "topic": "Thời điểm ra mắt sản phẩm (Product Launch Date)",
+      "final_value": "Dời ngày ra mắt sản phẩm sang ngày 15 tháng 7",
+      "status": "confirmed",
+      "condition": "Đạt phải bàn giao bản beta nội bộ và vượt qua toàn bộ security audit trước ngày 20 tháng 6",
+      "history": [
+        {
+          "value": "Ra mắt sản phẩm vào ngày 15 tháng 6",
+          "status": "superseded",
+          "evidence": [
+            {
+              "speaker": "Quân",
+              "timestamp": "14:05",
+              "quote": "Vấn đề đầu tiên là thời điểm ra mắt sản phẩm. Theo kế hoạch ban đầu, anh muốn team mình chốt ngày launch vào 15 tháng 6. Ra mắt giữa tháng 6 sẽ đón đầu được đợt cao điểm mua sắm mùa hè của người dùng.",
+              "utterance_id": null,
+              "verified": false
+            },
+            {
+              "speaker": "Mai",
+              "timestamp": "14:07",
+              "quote": "Em ủng hộ mốc 15 tháng 6 nhé anh Quân. Đợt hè chiến dịch quảng cáo chạy sẽ hiệu quả nhất, nếu trễ hơn thì vào mùa mưa người ta ít quan tâm hơn.",
+              "utterance_id": null,
+              "verified": false
+            }
+          ]
+        },
+        {
+          "value": "Dời ngày ra mắt sản phẩm sang ngày 15 tháng 7",
+          "status": "confirmed",
+          "evidence": [
+            {
+              "speaker": "Đạt",
+              "timestamp": "14:14",
+              "quote": "Em đề xuất dời sang ngày 15 tháng 7. Lúc đó tech có thêm 1 tháng trọn vẹn để hoàn thiện bảo mật và stress test.",
+              "utterance_id": null,
+              "verified": false
+            },
+            {
+              "speaker": "Quân",
+              "timestamp": "14:18",
+              "quote": "Được rồi, nghe phân tích kỹ thuật của Đạt thì anh thấy an toàn hệ thống phải là ưu tiên số một. Vậy chúng ta thống nhất hủy mốc tháng 6, chốt chính thức dời ngày launch sang 15 tháng 7. Nhưng kèm điều kiện bắt buộc: Đạt phải bàn giao bản beta nội bộ và vượt qua toàn bộ security audit trước ngày 20 tháng 6. Nếu trước 20 tháng 6 mà audit chưa pass thì chúng ta sẽ phải xem xét lại phạm vi tính năng.",
+              "utterance_id": null,
+              "verified": false
+            },
+            {
+              "speaker": "Đạt",
+              "timestamp": "14:20",
+              "quote": "Vâng, em cam kết điều kiện này. Chốt ngày 15 tháng 7 nhé mọi người.",
+              "utterance_id": null,
+              "verified": false
+            }
+          ]
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "item_id": "D002",
+      "topic": "Phương án kỹ thuật cho module thanh toán",
+      "final_value": "Tích hợp cổng thanh toán đối tác trung gian có sẵn (PayOS) cho giai đoạn MVP",
+      "status": "confirmed",
+      "condition": null,
+      "history": [
+        {
+          "value": "Tự xây dựng in-house toàn bộ hạ tầng cổng thanh toán core từ đầu",
+          "status": "superseded",
+          "evidence": [
+            {
+              "speaker": "Đạt",
+              "timestamp": "14:23",
+              "quote": "Ban đầu em dự tính team sẽ tự xây dựng in-house toàn bộ hạ tầng cổng thanh toán core từ đầu. Cách này giúp công ty làm chủ công nghệ lâu dài và tiết kiệm chi phí giao dịch cho bên thứ ba.",
+              "utterance_id": null,
+              "verified": false
+            }
+          ]
+        },
+        {
+          "value": "Tích hợp cổng thanh toán đối tác trung gian có sẵn (PayOS) cho giai đoạn MVP",
+          "status": "confirmed",
+          "evidence": [
+            {
+              "speaker": "Đạt",
+              "timestamp": "14:29",
+              "quote": "Nghe Thảo và Mai phân tích rủi ro thời gian và tuân thủ thì em thấy việc tự làm in-house lúc này đúng là chưa thực tế. Vậy em xin thay đổi đề xuất: chúng ta sẽ chuyển sang phương án tích hợp cổng thanh toán đối tác trung gian có sẵn, cụ thể là tích hợp giải pháp PayOS hoặc cổng thanh toán trung gian. Khi nào user tăng trưởng ổn định sau 1 năm thì mình mới tách ra làm in-house sau.",
+              "utterance_id": null,
+              "verified": false
+            },
+            {
+              "speaker": "Quân",
+              "timestamp": "14:31",
+              "quote": "Anh tán thành thay đổi này. Chốt giải pháp: bỏ phương án tự xây in-house, chọn phương án tích hợp cổng thanh toán đối tác cho bản ra mắt tháng 7.",
+              "utterance_id": null,
+              "verified": false
+            }
+          ]
+        }
+      ],
+      "needs_review": false
+    }
+  ],
+  "action_items": [
+    {
+      "item_id": "A001",
+      "task": "Lập tài liệu kiến trúc kỹ thuật và so sánh chi phí các đối tác cổng thanh toán",
+      "assignee": "Đạt",
+      "deadline": "10/05",
+      "dependencies": [],
+      "evidence": [
+        {
+          "speaker": "Quân",
+          "timestamp": "14:33",
+          "quote": "Về phân công việc: Đạt chuẩn bị tài liệu kiến trúc kỹ thuật và lập bảng so sánh chi phí các đối tác cổng thanh toán, hoàn thành trước ngày 10 tháng 5 nhé.",
+          "utterance_id": null,
+          "verified": false
+        },
+        {
+          "speaker": "Đạt",
+          "timestamp": "14:34",
+          "quote": "Vâng, em nhận task làm spec kiến trúc và so sánh đối tác thanh toán, deadline 10/5.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "item_id": "A002",
+      "task": "Cập nhật lại timeline kế hoạch truyền thông marketing cho ngày ra mắt 15 tháng 7",
+      "assignee": "Mai",
+      "deadline": "12/05",
+      "dependencies": [],
+      "evidence": [
+        {
+          "speaker": "Quân",
+          "timestamp": "14:35",
+          "quote": "Mai cập nhật lại toàn bộ timeline kế hoạch truyền thông cho ngày ra mắt 15 tháng 7, gửi lại cho anh trước 12 tháng 5.",
+          "utterance_id": null,
+          "verified": false
+        },
+        {
+          "speaker": "Mai",
+          "timestamp": "14:36",
+          "quote": "Dạ em nhận task cập nhật kế hoạch marketing, hạn chót 12/5 em gửi anh.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    }
+  ],
+  "blockers": [],
+  "requests": [],
+  "unresolved_items": [
+    {
+      "item_id": "UR001",
+      "topic": "Lựa chọn cơ sở dữ liệu (PostgreSQL vs MongoDB) cho module phân tích hành vi và event logs",
+      "reason_unresolved": "Chưa có số liệu thực tế trên tải giả lập; cần chạy benchmark hiệu năng và chi phí giữa PostgreSQL và MongoDB trước khi quyết định ở buổi họp tuần sau",
+      "evidence": [
+        {
+          "speaker": "Đạt",
+          "timestamp": "14:38",
+          "quote": "Còn một việc nữa là lựa chọn cơ sở dữ liệu cho module phân tích hành vi người dùng và lưu trữ event logs. Hiện tại em đang phân vân giữa PostgreSQL và MongoDB. PostgreSQL thì team quen dùng, đảm bảo tính toàn vẹn, nhưng MongoDB lại lưu schema linh hoạt và ghi logs tốc độ cao tốt hơn.",
+          "utterance_id": null,
+          "verified": false
+        },
+        {
+          "speaker": "Quân",
+          "timestamp": "14:42",
+          "quote": "Vậy vấn đề chọn PostgreSQL hay MongoDB hôm nay chúng ta tạm thời chưa chốt nhé. Đạt cần chạy benchmark hiệu năng và chi phí giữa hai database này trên môi trường giả lập rồi báo cáo lại ở buổi họp tuần sau thì cả team mới quyết định được.",
+          "utterance_id": null,
+          "verified": false
+        },
+        {
+          "speaker": "Đạt",
+          "timestamp": "14:43",
+          "quote": "Vâng, em đồng ý để mở vấn đề này, chờ benchmark xong sẽ quyết định sau.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    }
+  ]
+}

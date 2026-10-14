@@ -1,0 +1,116 @@
+{
+  "meeting_summary": "Cuộc họp nội bộ thảo luận về phản hồi ép giảm giá từ phía đối tác chưa được giải quyết và chốt phương án giao diện mới theo mẫu menu dropdown trên nhờ sự im lặng đồng thuận. Nhóm giao Bình thăm dò tiếp ý kiến đối tác và Nga cập nhật bảng báo cáo cho ban giám đốc nhưng đều không có deadline cụ thể.",
+  "participants": [
+    "Hoàng",
+    "Bình",
+    "Nga"
+  ],
+  "decisions": [
+    {
+      "item_id": "D001",
+      "topic": "Thiết kế giao diện thanh điều hướng mới",
+      "final_value": "Bỏ thanh điều hướng bên trái và chuyển sang thanh menu dropdown ở phía trên theo mẫu số 2",
+      "status": "confirmed",
+      "condition": null,
+      "history": [
+        {
+          "value": "Bỏ thanh điều hướng bên trái và chuyển sang thanh menu dropdown ở phía trên theo mẫu số 2",
+          "status": "confirmed",
+          "evidence": [
+            {
+              "speaker": "Hoàng",
+              "timestamp": "15:08",
+              "quote": "Về cái giao diện mới, đợt này mình sẽ bỏ hoàn toàn cái thanh điều hướng bên trái và chuyển hẳn sang dạng thanh menu dropdown ở phía trên giống như mẫu số 2 hôm trước anh gửi trong nhóm nhé. Mọi người thấy thế nào?",
+              "utterance_id": null,
+              "verified": false
+            },
+            {
+              "speaker": "Hoàng",
+              "timestamp": "15:11",
+              "quote": "Không ai phản đối à? Vậy chốt nhé, cứ theo mẫu số 2 hôm trước mà làm, đỡ mất thời gian tranh cãi.",
+              "utterance_id": null,
+              "verified": false
+            }
+          ]
+        }
+      ],
+      "needs_review": true
+    }
+  ],
+  "action_items": [
+    {
+      "item_id": "A001",
+      "task": "Liên hệ với đối tác ('anh ấy') để thăm dò thái độ về vấn đề hợp đồng và giá dịch vụ",
+      "assignee": "Bình",
+      "deadline": null,
+      "dependencies": [],
+      "evidence": [
+        {
+          "speaker": "Hoàng",
+          "timestamp": "15:13",
+          "quote": "Bình phụ trách liên hệ lại với anh ấy để thăm dò thêm thái độ xem sao nhé. Cố gắng khéo léo một chút đừng để căng thẳng quá.",
+          "utterance_id": null,
+          "verified": false
+        },
+        {
+          "speaker": "Bình",
+          "timestamp": "15:15",
+          "quote": "Vâng, để em chủ động nhắn tin hỏi anh ấy xem tình hình cụ thể thế nào.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": true
+    },
+    {
+      "item_id": "A002",
+      "task": "Cập nhật các số liệu trong bảng báo cáo tổng hợp theo format mẫu để trình ban giám đốc",
+      "assignee": "Nga",
+      "deadline": null,
+      "dependencies": [],
+      "evidence": [
+        {
+          "speaker": "Hoàng",
+          "timestamp": "15:17",
+          "quote": "Nga cập nhật lại mấy số liệu trong bảng hôm trước rồi gửi lên cho anh nhé. Lấy đúng cái format bữa nọ anh gửi mẫu đấy.",
+          "utterance_id": null,
+          "verified": false
+        },
+        {
+          "speaker": "Nga",
+          "timestamp": "15:18",
+          "quote": "Dạ vâng, em nắm rồi, để em làm xong rồi gửi anh sớm.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": true
+    }
+  ],
+  "blockers": [],
+  "requests": [],
+  "unresolved_items": [
+    {
+      "item_id": "UR001",
+      "topic": "Yêu cầu giảm giá 15% hoặc cắt giảm tính năng từ đối tác ('bên kia')",
+      "reason_unresolved": "Đối tác ép giảm giá 15% hoặc cắt giảm tính năng mới chịu ký tiếp hợp đồng; Hoàng tạm hoãn để bàn riêng với sếp sau",
+      "evidence": [
+        {
+          "speaker": "Hoàng",
+          "timestamp": "15:03",
+          "quote": "Vụ đợt trước ấy, anh ấy bảo không chấp nhận phương án đấy đâu. Bên họ ép mình phải cắt bớt tính năng hoặc giảm 15% tổng giá trị thì mới ký tiếp.",
+          "utterance_id": null,
+          "verified": false
+        },
+        {
+          "speaker": "Hoàng",
+          "timestamp": "15:06",
+          "quote": "Chắc anh ấy chưa thèm đọc đâu. Thôi cái vụ đấy để lát nữa anh bàn riêng với sếp sau. Giờ chuyển qua việc nội bộ của team mình trước đã.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": true
+    }
+  ]
+}

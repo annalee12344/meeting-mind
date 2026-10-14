@@ -1,0 +1,24 @@
+[09:00] Minh: Chào cả nhà, hôm nay team mình họp sprint planning cho Sprint 24 nhé. Thành phần tham gia hôm nay có anh Minh PM, Lan dev lead, Tuấn designer và Hương phụ trách QA. Mục tiêu chính của sprint này là hoàn thiện tính năng thanh toán QR code và cải tiến UI giỏ hàng.
+[09:02] Lan: Chào anh Minh và mọi người. Về phía dev, em đã review sơ qua backlog rồi. Khối lượng công việc đợt này khá tập trung vào module thanh toán.
+[09:03] Tuấn: Em cũng đã chuẩn bị xong luồng wireframe cơ bản cho trang checkout và pop-up hiển thị mã QR.
+[09:05] Hương: Về QA thì em cần lưu ý là module thanh toán liên quan đến tiền bạc nên sẽ cần test kỹ cả các trường hợp timeout và trừ tiền nhưng không cập nhật đơn.
+[09:07] Minh: Nhất trí với Hương. Vậy việc đầu tiên, chúng ta thống nhất phạm vi của Sprint 24 nhé: Sprint này team sẽ tập trung toàn lực triển khai tích hợp thanh toán QR code qua cổng VNPay và nâng cấp UI luồng giỏ hàng, tạm hoãn tính năng tích điểm sang Sprint 25. Cả team đồng ý không?
+[09:09] Lan: Em đồng ý chốt phạm vi này, như vậy tải công việc của dev mới khả thi trong 2 tuần.
+[09:10] Tuấn: Em hoàn toàn nhất trí.
+[09:10] Hương: Em cũng ok với scope này.
+[09:11] Minh: Ok, vậy quyết định thứ nhất là chốt scope Sprint 24 gồm tích hợp VNPay QR và nâng cấp UI giỏ hàng nhé. Tiếp theo, về quy ước tiến độ và release, anh đề xuất là chúng ta giữ quy tắc code freeze vào 17:00 chiều thứ Năm tuần sau ngày 24 tháng 10. Sau đó QA có trọn vẹn 1 ngày thứ Sáu để chạy regression test trước khi deploy production vào sáng thứ Bảy.
+[09:13] Lan: Quy ước code freeze lúc 17:00 ngày 24/10 là hợp lý anh ạ. Em sẽ căn thời gian merge code nhánh release đúng giờ.
+[09:14] Hương: 1 ngày regression là vừa đủ nếu không có blocker lớn phát sinh. Em đồng ý chốt lịch này.
+[09:15] Minh: Tuyệt vời, vậy chốt luôn quyết định thứ hai: Code freeze đúng 17:00 ngày 24 tháng 10 và QA test regression vào 25 tháng 10. Bây giờ sang phần phân công công việc cụ thể cho từng người.
+[09:17] Minh: Đầu tiên là Tuấn bên design. Tuấn cần hoàn thiện file Figma design specs chi tiết và xuất bộ design tokens cho giỏ hàng mới. Hạn chót cho Tuấn là 12:00 trưa thứ Sáu ngày 18 tháng 10 nhé.
+[09:18] Tuấn: Vâng anh Minh, em nhận task này. Em sẽ bàn giao link Figma kèm component specs đầy đủ cho Lan trước 12:00 ngày 18/10 để dev kịp dựng layout.
+[09:20] Minh: Lan ghi nhận nhé. Task tiếp theo của Lan là tích hợp SDK VNPay, viết các API endpoints và xử lý webhook callback từ cổng thanh toán. Deadline cho Lan là 17:00 ngày 22 tháng 10 để bàn giao bản test cho Hương.
+[09:21] Lan: Vâng, em nhận task tích hợp SDK và webhook VNPay, cam kết xong trước 17:00 ngày 22/10. Tuy nhiên em có một blocker cần báo cáo luôn ạ.
+[09:23] Minh: Blocker gì vậy Lan?
+[09:24] Lan: Hiện tại bên đối tác VNPay vẫn chưa gửi lại tài khoản sandbox và API secret key cho môi trường test của team mình, dù em đã gửi email yêu cầu từ 3 ngày trước. Nếu đầu tuần sau chưa có sandbox key thì em chưa thể test thật luồng tạo mã QR được. Em đang tiếp tục gửi email hối thúc họ.
+[09:26] Minh: Ok Lan, em cứ tiếp tục follow-up sát với đầu mối bên VNPay. Nếu đến chiều mai thứ Năm mà họ vẫn chưa phản hồi, anh sẽ trực tiếp gọi điện cho bên account manager của họ để push tiến độ.
+[09:27] Hương: Nếu có sandbox muộn thì lịch test của em sẽ bị dồn lại đấy ạ. Nhân tiện thì task của em là gì vậy anh Minh?
+[09:28] Minh: Task của Hương là xây dựng bộ test cases chi tiết cho luồng quét mã QR, bao gồm cả ma trận test trên các thiết bị iOS, Android và các tình huống mạng chập chờn. Hạn hoàn thành test cases cho Hương là cuối ngày thứ Hai 21 tháng 10 nhé.
+[09:30] Hương: Vâng, em nhận task viết test cases và test matrix cho QR payment, deadline trước 21/10.
+[09:31] Lan: À anh Minh ơi, em có một yêu cầu nhờ gửi sang team DevOps bên anh Hoàng. Nhờ team DevOps mở whitelist IP và cấu hình port mở cho webhook domain staging trước 10:00 sáng thứ Hai 21/10 để em test nhận callback IPN từ VNPay.
+[09:33] Minh: Được rồi, anh nhận yêu cầu này từ Lan và sẽ tạo ticket gửi team DevOps ngay sau cuộc họp hôm nay. Cuộc họp hôm nay rất hiệu quả, cảm ơn cả nhà!

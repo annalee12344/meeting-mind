@@ -1,0 +1,146 @@
+{
+  "meeting_summary": "Cuộc họp diễn ra rời rạc và hỗn loạn xoay quanh các sự cố kỹ thuật trên môi trường staging như spam thông báo, rò rỉ RAM và tranh cãi chưa có hồi kết về việc dùng WebSocket hay Long polling. Team tạm thống nhất tắt banner thông báo trên staging và giao Khoa kiểm tra file log crash của server vào đầu giờ chiều.",
+  "participants": [
+    "Hải",
+    "Trang",
+    "Khoa",
+    "Linh"
+  ],
+  "decisions": [
+    {
+      "item_id": "D001",
+      "topic": "Xử lý sự cố spam notification trên môi trường staging",
+      "final_value": "Tắt tạm thời banner notification trên staging để giảm phiền toái khi test",
+      "status": "confirmed",
+      "condition": null,
+      "history": [
+        {
+          "value": "Tắt tạm thời banner notification trên staging để giảm phiền toái khi test",
+          "status": "confirmed",
+          "evidence": [
+            {
+              "speaker": "Trang",
+              "timestamp": "10:22",
+              "quote": "Thôi thôi hai người đừng cãi nhau cái vụ WebSocket nữa, điếc hết cả tai! Giờ cái đống notification test trên staging đang bắn spam ầm ĩ lên app đây này, có tắt tạm đi không để em còn test luồng mua hàng?",
+              "utterance_id": null,
+              "verified": false
+            },
+            {
+              "speaker": "Hải",
+              "timestamp": "10:23",
+              "quote": "Ừ thì làm vậy đi, tắt tạm cái banner notification trên staging đi cho đỡ rối mắt.",
+              "utterance_id": null,
+              "verified": false
+            }
+          ]
+        }
+      ],
+      "needs_review": true
+    }
+  ],
+  "action_items": [
+    {
+      "item_id": "A001",
+      "task": "Kiểm tra file log crash của server staging hôm qua và gửi lên group chat",
+      "assignee": "Khoa",
+      "deadline": "Đầu giờ chiều",
+      "dependencies": [],
+      "evidence": [
+        {
+          "speaker": "Hải",
+          "timestamp": "10:26",
+          "quote": "Quay lại việc server crash lúc sáng sớm đi. Lát ai check lại cái file log crash hôm qua xem nguyên nhân cụ thể do đâu?",
+          "utterance_id": null,
+          "verified": false
+        },
+        {
+          "speaker": "Khoa",
+          "timestamp": "10:27",
+          "quote": "Để lát rảnh em ngó qua cho, tầm đầu giờ chiều em gửi log lên group chat.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": true
+    }
+  ],
+  "blockers": [
+    {
+      "item_id": "B001",
+      "issue": "Server staging bị leak memory lên 98% RAM và crash lúc 2 giờ sáng",
+      "owner": null,
+      "status": "unresolved",
+      "evidence": [
+        {
+          "speaker": "Khoa",
+          "timestamp": "10:16",
+          "quote": "Không phải em đâu nhé. À mà hôm qua server staging bị leak memory lúc 2 giờ sáng đấy, RAM vọt lên 98% crash luôn.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    }
+  ],
+  "requests": [],
+  "unresolved_items": [
+    {
+      "item_id": "UR001",
+      "topic": "Lựa chọn giữa WebSocket và HTTP Long polling/SSE cho module chat",
+      "reason_unresolved": "Hải muốn giữ WebSocket vì trải nghiệm realtime, còn Linh phản đối vì server 4GB RAM không gánh nổi và tốn chi phí infra; hai bên chưa đồng thuận và hoãn lại để họp riêng sau",
+      "evidence": [
+        {
+          "speaker": "Linh",
+          "timestamp": "10:17",
+          "quote": "Chắc tại con WebSocket kết nối không chịu ngắt rồi. Em đã bảo từ đầu là đừng có dùng WebSocket cho cái module chat này, tốn tài nguyên kinh khủng. Chuyển hết sang SSE hoặc HTTP Long polling đi cho nhẹ máy.",
+          "utterance_id": null,
+          "verified": false
+        },
+        {
+          "speaker": "Hải",
+          "timestamp": "10:18",
+          "quote": "Sao lại bỏ WebSocket được Linh? WebSocket nó mới mượt, realtime từng mili-giây, khách hàng người ta cần chat phản hồi tức thì. SSE chỉ có một chiều thôi, làm sao đáp ứng được UX!",
+          "utterance_id": null,
+          "verified": false
+        },
+        {
+          "speaker": "Linh",
+          "timestamp": "10:28",
+          "quote": "Thế còn cái vụ WebSocket với Long polling thì chốt thế nào anh Hải? Cứ để thế à?",
+          "utterance_id": null,
+          "verified": false
+        },
+        {
+          "speaker": "Hải",
+          "timestamp": "10:29",
+          "quote": "Chưa xong đâu, tí nữa họp riêng tiếp, giờ tao có lịch họp với khách hàng rồi. Giải tán đã!",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "item_id": "UR002",
+      "topic": "Đề xuất viết lại toàn bộ notification service bằng Go",
+      "reason_unresolved": "Khoa đề xuất viết lại bằng Go nhưng Trang mỉa mai và phản đối do còn nhiều bug tồn đọng; chủ đề bị bỏ dở không đi đến kết luận",
+      "evidence": [
+        {
+          "speaker": "Khoa",
+          "timestamp": "10:24",
+          "quote": "Hay là tiện tay em đập toàn bộ cái notification service cũ đi, viết lại bằng Go luôn cho mượt? Em thấy code cũ rác quá rồi.",
+          "utterance_id": null,
+          "verified": false
+        },
+        {
+          "speaker": "Trang",
+          "timestamp": "10:25",
+          "quote": "Vâng, hay quá cơ! Đang ngập đầu bug tồn đọng chưa fix xong mà đòi đập đi viết lại bằng Go. Thích thì cứ việc làm đi, xem đến lúc release ai ngồi rảnh mà duyệt cái PR nghìn dòng đấy cho nhé!",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": true
+    }
+  ]
+}

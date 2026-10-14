@@ -1,0 +1,17 @@
+[10:15] Hải: Alo mọi người nghe rõ không? Vào việc nhanh nhé, sáng nay cái login bằng Google đang bị...
+[10:16] Trang: Khoan đã anh Hải ơi, cái staging từ tối qua tới giờ notification nó bắn liên tục nghẽn cả máy em đây này, ai deploy cái gì lên đấy thế?
+[10:16] Khoa: Không phải em đâu nhé. À mà hôm qua server staging bị leak memory lúc 2 giờ sáng đấy, RAM vọt lên 98% crash luôn.
+[10:17] Linh: Chắc tại con WebSocket kết nối không chịu ngắt rồi. Em đã bảo từ đầu là đừng có dùng WebSocket cho cái module chat này, tốn tài nguyên kinh khủng. Chuyển hết sang SSE hoặc HTTP Long polling đi cho nhẹ máy.
+[10:18] Hải: Sao lại bỏ WebSocket được Linh? WebSocket nó mới mượt, realtime từng mili-giây, khách hàng người ta cần chat phản hồi tức thì. SSE chỉ có một chiều thôi, làm sao đáp ứng được UX!
+[10:19] Linh: Nhưng server tiền đâu mà gánh hả anh? Server có 4GB RAM mà anh đòi mở cả nghìn kết nối đồng thời, crash liên tục thì UX ở đâu ra? Anh tính chi phí infra chưa?
+[10:20] Hải: Chi phí thì tối ưu connection pool sau! Cốt lõi là tính năng phải mượt trước đã. Em cứ bàn lùi thế thì làm sao phát triển sản phẩm được?
+[10:21] Linh: Em không bàn lùi, em nói thực tế kỹ thuật! Đập tiền vào infra vô tội vạ rồi cuối tháng ai giải trình với sếp?
+[10:22] Trang: Thôi thôi hai người đừng cãi nhau cái vụ WebSocket nữa, điếc hết cả tai! Giờ cái đống notification test trên staging đang bắn spam ầm ĩ lên app đây này, có tắt tạm đi không để em còn test luồng mua hàng?
+[10:23] Hải: Ừ thì làm vậy đi, tắt tạm cái banner notification trên staging đi cho đỡ rối mắt.
+[10:24] Khoa: Hay là tiện tay em đập toàn bộ cái notification service cũ đi, viết lại bằng Go luôn cho mượt? Em thấy code cũ rác quá rồi.
+[10:25] Trang: Vâng, hay quá cơ! Đang ngập đầu bug tồn đọng chưa fix xong mà đòi đập đi viết lại bằng Go. Thích thì cứ việc làm đi, xem đến lúc release ai ngồi rảnh mà duyệt cái PR nghìn dòng đấy cho nhé!
+[10:26] Khoa: Ơ...
+[10:26] Hải: Quay lại việc server crash lúc sáng sớm đi. Lát ai check lại cái file log crash hôm qua xem nguyên nhân cụ thể do đâu?
+[10:27] Khoa: Để lát rảnh em ngó qua cho, tầm đầu giờ chiều em gửi log lên group chat.
+[10:28] Linh: Thế còn cái vụ WebSocket với Long polling thì chốt thế nào anh Hải? Cứ để thế à?
+[10:29] Hải: Chưa xong đâu, tí nữa họp riêng tiếp, giờ tao có lịch họp với khách hàng rồi. Giải tán đã!

@@ -1,0 +1,14 @@
+[16:00] Dũng: Nhanh gọn 15 phút thôi nhé anh em. Có mấy khúc mắc trong luồng đăng ký tài khoản cần bàn.
+[16:02] Phúc: Anh Dũng ơi, bên user cứ than phiền là bước nhập OTP phức tạp quá, rớt tỉ lệ chuyển đổi. Hay là mình bỏ luôn xác thực OTP với mật khẩu đi, cho người ta nhập mỗi email là đăng nhập thẳng luôn cho tiện?
+[16:04] Dũng: Ừ, ý tưởng hay lắm, làm thế đi! Để hacker nó vào nó dọn sạch dữ liệu công ty một thể, tiện quá cơ!
+[16:06] Phúc: ...
+[16:07] Mai: Anh Phúc toàn nghĩ ra mấy ý tưởng khó đỡ. À còn cái nút Checkout mới, em thấy anh Phúc đang để màu đỏ rực nhìn ghê quá, màu đỏ người ta tưởng nút hủy đơn. Guideline thương hiệu bắt buộc nút thanh toán phải là màu xanh lá cây, anh đổi sang xanh đi.
+[16:09] Phúc: Nhưng màu xanh chìm nghỉm trên nền trắng, nút đỏ mắt người ta mới chú ý click vào chứ. Em test A/B thấy nút đỏ tỉ lệ bấm cao hơn hẳn. Em vẫn giữ màu đỏ.
+[16:11] Mai: Em kiên quyết không đồng ý, màu đỏ nhìn như báo lỗi hệ thống, khách hàng người ta sợ không dám bấm. Nhất định phải đổi thành màu xanh lá cây!
+[16:12] Dũng: Thôi nhức đầu quá, hai đứa đừng cãi nhau nữa, chuyển sang chuyện khác đi.
+[16:13] Phúc: Đợt này sprint căng thẳng, OT liên miên thế này chắc công ty phải tài trợ cho mỗi anh em một cái lều ngủ lại văn phòng với hai thùng nước tăng lực nhỉ?
+[16:14] Dũng: Chốt luôn! Mai phát cho mỗi anh em một cái lều cắm trại ở công ty luôn từ tuần sau nhé.
+[16:15] Mai: Haha, anh Dũng đùa dai thế.
+[16:16] Dũng: Còn cái lịch làm việc, tuần sau toàn bộ team dev phải sang văn phòng khách hàng ngồi onsite cả tuần từ thứ Hai đến thứ Sáu nhé, bên đối tác họ vừa yêu cầu khẩn cấp sáng nay.
+[16:17] Phúc: Dạ vâng, sếp nói thì em nghe thôi chứ biết sao giờ, quyền trong tay sếp mà.
+[16:18] Dũng: Ok thế cứ vậy đi, giải tán.
