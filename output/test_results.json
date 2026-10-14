@@ -1,10 +1,18 @@
 {
-  "timestamp": "2026-10-13T16:28:41.695537",
-  "total_tests": 5,
+  "timestamp": "2026-10-15T01:04:55.255704",
+  "total_tests": 1,
   "overall_summary": {
-    "expected_count": 25,
-    "actual_count": 25,
-    "matched_count": 25,
+    "expected_count": 7,
+    "actual_count": 9,
+    "matched_count": 7,
+    "precision": 0.7778,
+    "recall": 1.0,
+    "f1": 0.875
+  },
+  "decisions_summary": {
+    "expected_count": 2,
+    "actual_count": 2,
+    "matched_count": 2,
     "precision": 1.0,
     "recall": 1.0,
     "f1": 1.0
@@ -25,45 +33,49 @@
           "f1": 1.0,
           "matches": [
             {
-              "expected": "Phạm vi Sprint 24 (Sprint Scope)",
-              "actual": "Phạm vi Sprint 24 (Sprint Scope)",
-              "score": 100.0
+              "expected": "Phạm vi Sprint 24 (Sprint Scope): Triển khai tích hợp thanh toán QR code qua cổng VNPay và nâng cấp UI giỏ hàng, hoãn tính năng tích điểm sang Sprint 25 [ItemStatus.CONFIRMED]",
+              "actual": "Phạm vi Sprint 24: Tập trung toàn lực triển khai tích hợp thanh toán QR code qua cổng VNPay và nâng cấp UI luồng giỏ hàng, tạm hoãn tính năng tích điểm sang Sprint 25 [ItemStatus.CONFIRMED]",
+              "score": 90.2
             },
             {
-              "expected": "Lịch code freeze và quy ước release Sprint 24",
-              "actual": "Lịch code freeze và quy ước release Sprint 24",
-              "score": 100.0
+              "expected": "Lịch code freeze và quy ước release Sprint 24: Code freeze vào 17:00 ngày 24/10 và QA chạy regression test ngày 25/10 trước khi deploy production vào sáng thứ Bảy [ItemStatus.CONFIRMED]",
+              "actual": "Lịch Code Freeze và Release: Code freeze đúng 17:00 ngày 24 tháng 10 và QA test regression vào ngày 25 tháng 10 [ItemStatus.CONFIRMED]",
+              "score": 74.6
             }
           ],
           "unmatched_expected": [],
-          "unmatched_actual": []
+          "unmatched_actual": [],
+          "status_mismatches": []
         },
         "Action Items": {
           "expected_count": 3,
-          "actual_count": 3,
+          "actual_count": 5,
           "matched_count": 3,
-          "precision": 1.0,
+          "precision": 0.6,
           "recall": 1.0,
-          "f1": 1.0,
+          "f1": 0.75,
           "matches": [
             {
               "expected": "Hoàn thiện Figma design specs chi tiết và xuất bộ design tokens cho giỏ hàng mới",
-              "actual": "Hoàn thiện Figma design specs chi tiết và xuất bộ design tokens cho giỏ hàng mới",
+              "actual": "Hoàn thiện file Figma design specs chi tiết và xuất bộ design tokens cho giỏ hàng mới",
               "score": 100.0
             },
             {
               "expected": "Tích hợp SDK VNPay, viết API endpoints và xử lý webhook callback từ cổng thanh toán",
-              "actual": "Tích hợp SDK VNPay, viết API endpoints và xử lý webhook callback từ cổng thanh toán",
+              "actual": "Tích hợp SDK VNPay, viết các API endpoints và xử lý webhook callback từ cổng thanh toán",
               "score": 100.0
             },
             {
               "expected": "Xây dựng test cases chi tiết cho luồng quét mã QR và ma trận test trên thiết bị iOS, Android",
-              "actual": "Xây dựng test cases chi tiết cho luồng quét mã QR và ma trận test trên thiết bị iOS, Android",
-              "score": 100.0
+              "actual": "Xây dựng bộ test cases chi tiết cho luồng quét mã QR, bao gồm ma trận test trên các thiết bị iOS, Android và các tình huống mạng chập chờn",
+              "score": 98.2
             }
           ],
           "unmatched_expected": [],
-          "unmatched_actual": []
+          "unmatched_actual": [
+            "Trực tiếp gọi điện cho bên account manager của VNPay để push tiến độ nếu chưa nhận được phản hồi",
+            "Tạo ticket gửi team DevOps mở whitelist IP và cấu hình port mở cho webhook domain staging"
+          ]
         },
         "Blockers": {
           "expected_count": 1,
@@ -75,8 +87,8 @@
           "matches": [
             {
               "expected": "Đối tác VNPay chưa cấp tài khoản sandbox và API secret key cho môi trường test dù đã gửi email yêu cầu từ 3 ngày trước",
-              "actual": "Đối tác VNPay chưa cấp tài khoản sandbox và API secret key cho môi trường test dù đã gửi email yêu cầu từ 3 ngày trước",
-              "score": 100.0
+              "actual": "Bên đối tác VNPay vẫn chưa gửi lại tài khoản sandbox và API secret key cho môi trường test",
+              "score": 90.2
             }
           ],
           "unmatched_expected": [],
@@ -92,8 +104,8 @@
           "matches": [
             {
               "expected": "Nhờ team DevOps mở whitelist IP và cấu hình mở port cho webhook domain staging trước 10:00 ngày 21/10",
-              "actual": "Nhờ team DevOps mở whitelist IP và cấu hình mở port cho webhook domain staging trước 10:00 ngày 21/10",
-              "score": 100.0
+              "actual": "Nhờ team DevOps mở whitelist IP và cấu hình port mở cho webhook domain staging trước 10:00 sáng thứ Hai 21/10 để test nhận callback IPN từ VNPay",
+              "score": 97.4
             }
           ],
           "unmatched_expected": [],
@@ -113,398 +125,17 @@
       },
       "totals": {
         "expected_count": 7,
-        "actual_count": 7,
+        "actual_count": 9,
         "matched_count": 7,
-        "precision": 1.0,
+        "precision": 0.7778,
         "recall": 1.0,
-        "f1": 1.0
-      }
-    },
-    {
-      "test_id": 2,
-      "name": "test_02_decision_change",
-      "description": "Product launch timing (A->B changes: 2 decisions with history, 2 actions, 1 unresolved)",
-      "status": "passed",
-      "categories": {
-        "Decisions": {
-          "expected_count": 2,
-          "actual_count": 2,
-          "matched_count": 2,
-          "precision": 1.0,
-          "recall": 1.0,
-          "f1": 1.0,
-          "matches": [
-            {
-              "expected": "Thời điểm ra mắt sản phẩm (Product Launch Date)",
-              "actual": "Thời điểm ra mắt sản phẩm (Product Launch Date)",
-              "score": 100.0
-            },
-            {
-              "expected": "Phương án kỹ thuật cho module thanh toán",
-              "actual": "Phương án kỹ thuật cho module thanh toán",
-              "score": 100.0
-            }
-          ],
-          "unmatched_expected": [],
-          "unmatched_actual": []
-        },
-        "Action Items": {
-          "expected_count": 2,
-          "actual_count": 2,
-          "matched_count": 2,
-          "precision": 1.0,
-          "recall": 1.0,
-          "f1": 1.0,
-          "matches": [
-            {
-              "expected": "Lập tài liệu kiến trúc kỹ thuật và so sánh chi phí các đối tác cổng thanh toán",
-              "actual": "Lập tài liệu kiến trúc kỹ thuật và so sánh chi phí các đối tác cổng thanh toán",
-              "score": 100.0
-            },
-            {
-              "expected": "Cập nhật lại timeline kế hoạch truyền thông marketing cho ngày ra mắt 15 tháng 7",
-              "actual": "Cập nhật lại timeline kế hoạch truyền thông marketing cho ngày ra mắt 15 tháng 7",
-              "score": 100.0
-            }
-          ],
-          "unmatched_expected": [],
-          "unmatched_actual": []
-        },
-        "Blockers": {
-          "expected_count": 0,
-          "actual_count": 0,
-          "matched_count": 0,
-          "precision": 1.0,
-          "recall": 1.0,
-          "f1": 1.0,
-          "matches": [],
-          "unmatched_expected": [],
-          "unmatched_actual": []
-        },
-        "Requests": {
-          "expected_count": 0,
-          "actual_count": 0,
-          "matched_count": 0,
-          "precision": 1.0,
-          "recall": 1.0,
-          "f1": 1.0,
-          "matches": [],
-          "unmatched_expected": [],
-          "unmatched_actual": []
-        },
-        "Unresolved Items": {
-          "expected_count": 1,
-          "actual_count": 1,
-          "matched_count": 1,
-          "precision": 1.0,
-          "recall": 1.0,
-          "f1": 1.0,
-          "matches": [
-            {
-              "expected": "Lựa chọn cơ sở dữ liệu (PostgreSQL vs MongoDB) cho module phân tích hành vi và event logs",
-              "actual": "Lựa chọn cơ sở dữ liệu (PostgreSQL vs MongoDB) cho module phân tích hành vi và event logs",
-              "score": 100.0
-            }
-          ],
-          "unmatched_expected": [],
-          "unmatched_actual": []
-        }
+        "f1": 0.875
       },
-      "totals": {
-        "expected_count": 5,
-        "actual_count": 5,
-        "matched_count": 5,
-        "precision": 1.0,
-        "recall": 1.0,
-        "f1": 1.0
-      }
-    },
-    {
-      "test_id": 3,
-      "name": "test_03_chaotic",
-      "description": "Chaotic meeting (interruptions, casual speech, sarcasm, unresolved conflict)",
-      "status": "passed",
-      "categories": {
-        "Decisions": {
-          "expected_count": 1,
-          "actual_count": 1,
-          "matched_count": 1,
-          "precision": 1.0,
-          "recall": 1.0,
-          "f1": 1.0,
-          "matches": [
-            {
-              "expected": "Xử lý sự cố spam notification trên môi trường staging",
-              "actual": "Xử lý sự cố spam notification trên môi trường staging",
-              "score": 100.0
-            }
-          ],
-          "unmatched_expected": [],
-          "unmatched_actual": []
-        },
-        "Action Items": {
-          "expected_count": 1,
-          "actual_count": 1,
-          "matched_count": 1,
-          "precision": 1.0,
-          "recall": 1.0,
-          "f1": 1.0,
-          "matches": [
-            {
-              "expected": "Kiểm tra file log crash của server staging hôm qua và gửi lên group chat",
-              "actual": "Kiểm tra file log crash của server staging hôm qua và gửi lên group chat",
-              "score": 100.0
-            }
-          ],
-          "unmatched_expected": [],
-          "unmatched_actual": []
-        },
-        "Blockers": {
-          "expected_count": 1,
-          "actual_count": 1,
-          "matched_count": 1,
-          "precision": 1.0,
-          "recall": 1.0,
-          "f1": 1.0,
-          "matches": [
-            {
-              "expected": "Server staging bị leak memory lên 98% RAM và crash lúc 2 giờ sáng",
-              "actual": "Server staging bị leak memory lên 98% RAM và crash lúc 2 giờ sáng",
-              "score": 100.0
-            }
-          ],
-          "unmatched_expected": [],
-          "unmatched_actual": []
-        },
-        "Requests": {
-          "expected_count": 0,
-          "actual_count": 0,
-          "matched_count": 0,
-          "precision": 1.0,
-          "recall": 1.0,
-          "f1": 1.0,
-          "matches": [],
-          "unmatched_expected": [],
-          "unmatched_actual": []
-        },
-        "Unresolved Items": {
-          "expected_count": 2,
-          "actual_count": 2,
-          "matched_count": 2,
-          "precision": 1.0,
-          "recall": 1.0,
-          "f1": 1.0,
-          "matches": [
-            {
-              "expected": "Lựa chọn giữa WebSocket và HTTP Long polling/SSE cho module chat",
-              "actual": "Lựa chọn giữa WebSocket và HTTP Long polling/SSE cho module chat",
-              "score": 100.0
-            },
-            {
-              "expected": "Đề xuất viết lại toàn bộ notification service bằng Go",
-              "actual": "Đề xuất viết lại toàn bộ notification service bằng Go",
-              "score": 100.0
-            }
-          ],
-          "unmatched_expected": [],
-          "unmatched_actual": []
-        }
-      },
-      "totals": {
-        "expected_count": 5,
-        "actual_count": 5,
-        "matched_count": 5,
-        "precision": 1.0,
-        "recall": 1.0,
-        "f1": 1.0
-      }
-    },
-    {
-      "test_id": 4,
-      "name": "test_04_implicit",
-      "description": "Implicit context (implicit pronouns, silence consensus, no deadlines)",
-      "status": "passed",
-      "categories": {
-        "Decisions": {
-          "expected_count": 1,
-          "actual_count": 1,
-          "matched_count": 1,
-          "precision": 1.0,
-          "recall": 1.0,
-          "f1": 1.0,
-          "matches": [
-            {
-              "expected": "Thiết kế giao diện thanh điều hướng mới",
-              "actual": "Thiết kế giao diện thanh điều hướng mới",
-              "score": 100.0
-            }
-          ],
-          "unmatched_expected": [],
-          "unmatched_actual": []
-        },
-        "Action Items": {
-          "expected_count": 2,
-          "actual_count": 2,
-          "matched_count": 2,
-          "precision": 1.0,
-          "recall": 1.0,
-          "f1": 1.0,
-          "matches": [
-            {
-              "expected": "Liên hệ với đối tác ('anh ấy') để thăm dò thái độ về vấn đề hợp đồng và giá dịch vụ",
-              "actual": "Liên hệ với đối tác ('anh ấy') để thăm dò thái độ về vấn đề hợp đồng và giá dịch vụ",
-              "score": 100.0
-            },
-            {
-              "expected": "Cập nhật các số liệu trong bảng báo cáo tổng hợp theo format mẫu để trình ban giám đốc",
-              "actual": "Cập nhật các số liệu trong bảng báo cáo tổng hợp theo format mẫu để trình ban giám đốc",
-              "score": 100.0
-            }
-          ],
-          "unmatched_expected": [],
-          "unmatched_actual": []
-        },
-        "Blockers": {
-          "expected_count": 0,
-          "actual_count": 0,
-          "matched_count": 0,
-          "precision": 1.0,
-          "recall": 1.0,
-          "f1": 1.0,
-          "matches": [],
-          "unmatched_expected": [],
-          "unmatched_actual": []
-        },
-        "Requests": {
-          "expected_count": 0,
-          "actual_count": 0,
-          "matched_count": 0,
-          "precision": 1.0,
-          "recall": 1.0,
-          "f1": 1.0,
-          "matches": [],
-          "unmatched_expected": [],
-          "unmatched_actual": []
-        },
-        "Unresolved Items": {
-          "expected_count": 1,
-          "actual_count": 1,
-          "matched_count": 1,
-          "precision": 1.0,
-          "recall": 1.0,
-          "f1": 1.0,
-          "matches": [
-            {
-              "expected": "Yêu cầu giảm giá 15% hoặc cắt giảm tính năng từ đối tác ('bên kia')",
-              "actual": "Yêu cầu giảm giá 15% hoặc cắt giảm tính năng từ đối tác ('bên kia')",
-              "score": 100.0
-            }
-          ],
-          "unmatched_expected": [],
-          "unmatched_actual": []
-        }
-      },
-      "totals": {
-        "expected_count": 4,
-        "actual_count": 4,
-        "matched_count": 4,
-        "precision": 1.0,
-        "recall": 1.0,
-        "f1": 1.0
-      }
-    },
-    {
-      "test_id": 5,
-      "name": "test_05_sarcasm_fail",
-      "description": "Adversarial test (sarcasm rejection, joke proposals, unresolved disputes)",
-      "status": "passed",
-      "categories": {
-        "Decisions": {
-          "expected_count": 1,
-          "actual_count": 1,
-          "matched_count": 1,
-          "precision": 1.0,
-          "recall": 1.0,
-          "f1": 1.0,
-          "matches": [
-            {
-              "expected": "Lịch làm việc onsite tại văn phòng khách hàng của team dev",
-              "actual": "Lịch làm việc onsite tại văn phòng khách hàng của team dev",
-              "score": 100.0
-            }
-          ],
-          "unmatched_expected": [],
-          "unmatched_actual": []
-        },
-        "Action Items": {
-          "expected_count": 1,
-          "actual_count": 1,
-          "matched_count": 1,
-          "precision": 1.0,
-          "recall": 1.0,
-          "f1": 1.0,
-          "matches": [
-            {
-              "expected": "Sang làm việc onsite tại văn phòng đối tác từ thứ Hai đến thứ Sáu",
-              "actual": "Sang làm việc onsite tại văn phòng đối tác từ thứ Hai đến thứ Sáu",
-              "score": 100.0
-            }
-          ],
-          "unmatched_expected": [],
-          "unmatched_actual": []
-        },
-        "Blockers": {
-          "expected_count": 0,
-          "actual_count": 0,
-          "matched_count": 0,
-          "precision": 1.0,
-          "recall": 1.0,
-          "f1": 1.0,
-          "matches": [],
-          "unmatched_expected": [],
-          "unmatched_actual": []
-        },
-        "Requests": {
-          "expected_count": 0,
-          "actual_count": 0,
-          "matched_count": 0,
-          "precision": 1.0,
-          "recall": 1.0,
-          "f1": 1.0,
-          "matches": [],
-          "unmatched_expected": [],
-          "unmatched_actual": []
-        },
-        "Unresolved Items": {
-          "expected_count": 2,
-          "actual_count": 2,
-          "matched_count": 2,
-          "precision": 1.0,
-          "recall": 1.0,
-          "f1": 1.0,
-          "matches": [
-            {
-              "expected": "Lựa chọn màu sắc cho nút Checkout (màu đỏ vs màu xanh lá)",
-              "actual": "Lựa chọn màu sắc cho nút Checkout (màu đỏ vs màu xanh lá)",
-              "score": 100.0
-            },
-            {
-              "expected": "Đề xuất loại bỏ bước xác thực OTP và mật khẩu khi đăng nhập",
-              "actual": "Đề xuất loại bỏ bước xác thực OTP và mật khẩu khi đăng nhập",
-              "score": 100.0
-            }
-          ],
-          "unmatched_expected": [],
-          "unmatched_actual": []
-        }
-      },
-      "totals": {
-        "expected_count": 4,
-        "actual_count": 4,
-        "matched_count": 4,
-        "precision": 1.0,
-        "recall": 1.0,
-        "f1": 1.0
+      "public_counts": {
+        "decisions": 2,
+        "tasks": 6,
+        "unresolved": 0,
+        "issues": 1
       }
     }
   ]

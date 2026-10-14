@@ -1,0 +1,181 @@
+{
+  "meeting_summary": "Cuộc họp kỹ thuật quyết định chuyển toàn bộ môi trường staging sang Google Cloud Platform (GCP) để tối ưu chi phí hạ tầng và tận dụng khoản tài trợ credits. Nhóm phân công nhiệm vụ tạo cluster staging trên GCP, cấu hình IAM, cập nhật test suite và chuyển đổi DNS domain staging sang Cloudflare, đồng thời quyết định tạm giữ nguyên database production trên AWS.",
+  "participants": [
+    "Đức",
+    "Tuấn",
+    "Hoa",
+    "Khánh"
+  ],
+  "decisions": [
+    {
+      "item_id": "D001",
+      "topic": "Hạ tầng môi trường staging",
+      "final_value": "Chuyển toàn bộ môi trường staging sang GCP để tiết kiệm chi phí",
+      "status": "confirmed",
+      "condition": null,
+      "history": [
+        {
+          "value": "Chuyển toàn bộ môi trường staging sang GCP để tiết kiệm chi phí",
+          "status": "confirmed",
+          "speaker": "Đức",
+          "utterance_id": null,
+          "evidence": [
+            {
+              "speaker": "Đức",
+              "timestamp": "10:12",
+              "quote": "Vậy thống nhất chuyển toàn bộ staging sang GCP để tiết kiệm chi phí nhé, Tuấn hoàn thành việc tạo cụm staging trên GCP trước 17:00 ngày 26/10.",
+              "utterance_id": null,
+              "verified": false
+            },
+            {
+              "speaker": "Tuấn",
+              "timestamp": "10:14",
+              "quote": "Vâng anh Đức, em nhận task chuyển môi trường sang GCP và sẽ hoàn tất trước 17:00 ngày 26/10.",
+              "utterance_id": null,
+              "verified": false
+            }
+          ]
+        }
+      ],
+      "needs_review": false
+    }
+  ],
+  "action_items": [
+    {
+      "item_id": "A001",
+      "task": "Tạo cụm staging trên GCP",
+      "assignee": "Tuấn",
+      "assigned_by": "Đức",
+      "assignee_confirmed": true,
+      "confirmation_utterance_id": null,
+      "deadline": "17:00 ngày 26/10",
+      "dependencies": ["D001"],
+      "evidence": [
+        {
+          "speaker": "Đức",
+          "timestamp": "10:12",
+          "quote": "Vậy thống nhất chuyển toàn bộ staging sang GCP để tiết kiệm chi phí nhé, Tuấn hoàn thành việc tạo cụm staging trên GCP trước 17:00 ngày 26/10.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "item_id": "A002",
+      "task": "Viết tài liệu phân quyền IAM và cấu hình service account cho dev",
+      "assignee": "Hoa",
+      "assigned_by": "Đức",
+      "assignee_confirmed": true,
+      "confirmation_utterance_id": null,
+      "deadline": "12:00 ngày 25/10",
+      "dependencies": ["D001"],
+      "evidence": [
+        {
+          "speaker": "Đức",
+          "timestamp": "10:18",
+          "quote": "Hoa viết tài liệu phân quyền IAM và cấu hình service account cho các dev trước 12:00 ngày 25/10 nhé.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "item_id": "A003",
+      "task": "Cập nhật biến môi trường test suite runner",
+      "assignee": "Khánh",
+      "assigned_by": "Đức",
+      "assignee_confirmed": true,
+      "confirmation_utterance_id": null,
+      "deadline": "17:00 ngày 27/10",
+      "dependencies": ["D001"],
+      "evidence": [
+        {
+          "speaker": "Khánh",
+          "timestamp": "10:22",
+          "quote": "Bên QA cần chuẩn bị lại các biến môi trường test runner. Em sẽ hoàn thành trước 17:00 ngày 27/10.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "item_id": "A004",
+      "task": "Chuyển đổi DNS domain staging sang Cloudflare",
+      "assignee": "Hoa",
+      "assigned_by": "Đức",
+      "assignee_confirmed": true,
+      "confirmation_utterance_id": null,
+      "deadline": "10:00 ngày 23/10",
+      "dependencies": [],
+      "evidence": [
+        {
+          "speaker": "Hoa",
+          "timestamp": "10:28",
+          "quote": "Em sẽ phụ trách chuyển đổi DNS domain staging sang Cloudflare trước 10:00 sáng mai 23/10.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "item_id": "A005",
+      "task": "Backup dữ liệu cấu hình staging cũ sang S3",
+      "assignee": "Tuấn",
+      "assigned_by": "Đức",
+      "assignee_confirmed": true,
+      "confirmation_utterance_id": null,
+      "deadline": "12:00 ngày 24/10",
+      "dependencies": [],
+      "evidence": [
+        {
+          "speaker": "Đức",
+          "timestamp": "10:38",
+          "quote": "Việc đó rất cần thiết, Tuấn backup xong trước 12:00 ngày 24/10 nhé.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    }
+  ],
+  "blockers": [
+    {
+      "item_id": "B001",
+      "issue": "Domain staging hiện tại gắn chặt với AWS Route53 cần đổi nameserver sang Cloudflare",
+      "owner": "Tuấn",
+      "status": "confirmed",
+      "evidence": [
+        {
+          "speaker": "Tuấn",
+          "timestamp": "10:26",
+          "quote": "Có một vấn đề là domain staging hiện tại gắn chặt với AWS Route53, cần đổi nameserver sang Cloudflare.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    }
+  ],
+  "requests": [],
+  "unresolved_items": [
+    {
+      "item_id": "UR001",
+      "topic": "Chuyển cơ sở dữ liệu production sang GCP",
+      "reason_unresolved": "Tạm thời giữ nguyên prod trên AWS và để ngỏ xem xét lại vào quý sau",
+      "evidence": [
+        {
+          "speaker": "Đức",
+          "timestamp": "10:36",
+          "quote": "Đồng ý để ngỏ việc production, hôm nay chỉ tập trung staging.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    }
+  ]
+}

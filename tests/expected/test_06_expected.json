@@ -1,0 +1,161 @@
+{
+  "meeting_summary": "Cuộc họp kỹ thuật thống nhất lựa chọn MongoDB thay thế PostgreSQL cho module phân tích log do ưu thế thông lượng ghi cao gấp 3 lần và phù hợp cấu trúc log phi cấu trúc. Nhóm phân công nhiệm vụ viết data access layer, script migration dữ liệu và xử lý cảnh báo thiếu dung lượng ổ cứng trên cluster staging.",
+  "participants": [
+    "Hoàng",
+    "Nam",
+    "Linh",
+    "Mai"
+  ],
+  "decisions": [
+    {
+      "item_id": "D001",
+      "topic": "Lựa chọn cơ sở dữ liệu cho module phân tích log",
+      "final_value": "Dùng MongoDB thay PostgreSQL cho module phân tích log hệ thống",
+      "status": "confirmed",
+      "condition": null,
+      "history": [
+        {
+          "value": "Dùng MongoDB thay PostgreSQL cho module phân tích log hệ thống",
+          "status": "confirmed",
+          "speaker": "Hoàng",
+          "utterance_id": null,
+          "evidence": [
+            {
+              "speaker": "Hoàng",
+              "timestamp": "09:13",
+              "quote": "Vậy chốt dùng MongoDB thay PostgreSQL cho module phân tích log nhé cả team.",
+              "utterance_id": null,
+              "verified": false
+            },
+            {
+              "speaker": "Nam",
+              "timestamp": "09:15",
+              "quote": "Em hoàn toàn nhất trí chốt phương án MongoDB này.",
+              "utterance_id": null,
+              "verified": false
+            }
+          ]
+        }
+      ],
+      "needs_review": false
+    }
+  ],
+  "action_items": [
+    {
+      "item_id": "A001",
+      "task": "Viết lại data access layer kết nối với MongoDB",
+      "assignee": "Nam",
+      "assigned_by": "Hoàng",
+      "assignee_confirmed": true,
+      "confirmation_utterance_id": null,
+      "deadline": "17:00 ngày 25/10",
+      "dependencies": ["D001"],
+      "evidence": [
+        {
+          "speaker": "Hoàng",
+          "timestamp": "09:20",
+          "quote": "Nam sẽ phụ trách viết lại data access layer kết nối với MongoDB. Hạn chót hoàn thành cho Nam là 17:00 ngày 25/10 nhé.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "item_id": "A002",
+      "task": "Xây dựng script migrate dữ liệu log cũ từ PostgreSQL sang MongoDB",
+      "assignee": "Linh",
+      "assigned_by": "Hoàng",
+      "assignee_confirmed": true,
+      "confirmation_utterance_id": null,
+      "deadline": "12:00 ngày 27/10",
+      "dependencies": ["D001"],
+      "evidence": [
+        {
+          "speaker": "Hoàng",
+          "timestamp": "09:24",
+          "quote": "Linh sẽ xây dựng script migrate dữ liệu log cũ từ PostgreSQL sang MongoDB. Deadline cho Linh là 12:00 ngày 27/10.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "item_id": "A003",
+      "task": "Soạn tài liệu query cheat-sheet cho team",
+      "assignee": "Linh",
+      "assigned_by": "Hoàng",
+      "assignee_confirmed": true,
+      "confirmation_utterance_id": null,
+      "deadline": "17:00 ngày 28/10",
+      "dependencies": ["D001"],
+      "evidence": [
+        {
+          "speaker": "Hoàng",
+          "timestamp": "09:28",
+          "quote": "Linh soạn luôn tài liệu query cheat-sheet cho team nhé, hạn 17:00 ngày 28/10.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "item_id": "A004",
+      "task": "Mở ticket yêu cầu bộ phận hạ tầng cấp thêm 200GB ổ SSD",
+      "assignee": "Mai",
+      "assigned_by": "Hoàng",
+      "assignee_confirmed": true,
+      "confirmation_utterance_id": null,
+      "deadline": "10:00 ngày 21/10",
+      "dependencies": [],
+      "evidence": [
+        {
+          "speaker": "Hoàng",
+          "timestamp": "09:32",
+          "quote": "Mai mở ticket yêu cầu bộ phận hạ tầng cấp thêm 200GB ổ SSD trước 10:00 sáng mai 21/10 nhé.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    }
+  ],
+  "blockers": [
+    {
+      "item_id": "B001",
+      "issue": "Ổ đĩa lưu trữ trên cluster staging hiện chỉ còn trống khoảng 15%, có thể thiếu dung lượng khi chạy thử migrate",
+      "owner": "Mai",
+      "status": "confirmed",
+      "evidence": [
+        {
+          "speaker": "Mai",
+          "timestamp": "09:30",
+          "quote": "Em có một vấn đề cần lưu ý là ổ đĩa lưu trữ trên cluster staging hiện chỉ còn trống khoảng 15%, có thể thiếu dung lượng khi chạy thử migrate.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    }
+  ],
+  "requests": [],
+  "unresolved_items": [
+    {
+      "item_id": "UR001",
+      "topic": "Quy trình backup tự động định kỳ của MongoDB",
+      "reason_unresolved": "Để sang buổi họp kỹ thuật tuần tới bàn chi tiết hơn",
+      "evidence": [
+        {
+          "speaker": "Hoàng",
+          "timestamp": "09:35",
+          "quote": "Vấn đề backup tự động để sang buổi họp kỹ thuật tuần tới chúng ta sẽ bàn chi tiết hơn.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    }
+  ]
+}

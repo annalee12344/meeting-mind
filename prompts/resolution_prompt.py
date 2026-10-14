@@ -95,10 +95,82 @@ CẤU TRÚC JSON ĐẦU RA (SCHEMA MEETINGOUTPUT):
       "needs_review": false
     }
   ],
-  "action_items": [],
-  "blockers": [],
-  "requests": [],
-  "unresolved_items": []
+  "action_items": [
+    {
+      "item_id": "A001",
+      "task": "string",
+      "assignee": "string hoặc null",
+      "assigned_by": "string hoặc null",
+      "assignee_confirmed": false,
+      "confirmation_utterance_id": null,
+      "deadline": "string hoặc null",
+      "dependencies": [],
+      "evidence": [
+        {
+          "speaker": "string",
+          "timestamp": "string hoặc null",
+          "quote": "string (nguyên văn)",
+          "utterance_id": "string",
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    }
+  ],
+  "blockers": [
+    {
+      "item_id": "B001",
+      "issue": "string",
+      "owner": "string hoặc null",
+      "status": "confirmed",
+      "evidence": [
+        {
+          "speaker": "string",
+          "timestamp": "string hoặc null",
+          "quote": "string (nguyên văn)",
+          "utterance_id": "string",
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    }
+  ],
+  "requests": [
+    {
+      "item_id": "R001",
+      "type": "request | feedback",
+      "content": "string",
+      "from_person": "string hoặc null",
+      "to_person": "string hoặc null",
+      "evidence": [
+        {
+          "speaker": "string",
+          "timestamp": "string hoặc null",
+          "quote": "string (nguyên văn)",
+          "utterance_id": "string",
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    }
+  ],
+  "unresolved_items": [
+    {
+      "item_id": "UR001",
+      "topic": "string",
+      "reason_unresolved": "string",
+      "evidence": [
+        {
+          "speaker": "string",
+          "timestamp": "string hoặc null",
+          "quote": "string (nguyên văn)",
+          "utterance_id": "string",
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    }
+  ]
 }
 
 VÍ DỤ MINH HỌA CÁC TÌNH HUỐNG (FEW-SHOT EXAMPLES):

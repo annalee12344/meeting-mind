@@ -12,7 +12,7 @@ from enum import Enum
 from typing import Any, List, Literal, Optional, Tuple
 from uuid import uuid4
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -155,6 +155,14 @@ class Blocker(BaseModel):
     evidence: list[Evidence] = Field(default_factory=list)
     needs_review: bool = False
 
+    @model_validator(mode="before")
+    @classmethod
+    def _fallback_blocker_fields(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            if "issue" not in data:
+                data["issue"] = data.get("content") or data.get("description") or data.get("text") or ""
+        return data
+
     @field_validator("status", mode="before")
     @classmethod
     def validate_status(cls, v: Any) -> ItemStatus:
@@ -164,12 +172,22 @@ class Blocker(BaseModel):
 class Request(BaseModel):
     """A request or feedback item from the meeting (Internal Step 2)."""
     item_id: str = Field(description="e.g. R001")
-    type: str = Field(description="'request' or 'feedback'")
+    type: str = Field(default="request", description="'request' or 'feedback'")
     content: str
     from_person: Optional[str] = None
     to_person: Optional[str] = None
     evidence: list[Evidence] = Field(default_factory=list)
     needs_review: bool = False
+
+    @model_validator(mode="before")
+    @classmethod
+    def _fallback_request_fields(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            if "type" not in data or not data["type"]:
+                data["type"] = "request"
+            if "content" not in data:
+                data["content"] = data.get("request") or data.get("feedback") or data.get("description") or ""
+        return data
 
 
 class UnresolvedItem(BaseModel):

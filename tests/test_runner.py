@@ -3,7 +3,8 @@ Meeting Mind — Test Runner & Evaluation Suite.
 
 Executes meeting analysis pipeline against benchmark transcripts,
 compares generated outputs against expected ground truth using RapidFuzz,
-computes Precision, Recall, and F1 metrics, displays formatted Rich tables,
+computes Precision, Recall, and F1 metrics (with dedicated semantic decision matching
+and separate status evaluation), displays formatted Rich tables,
 and saves evaluation results to output/test_results.json.
 
 Usage:
@@ -31,8 +32,19 @@ from pipeline.preprocessor import preprocess
 from pipeline.extractor import Extractor
 from pipeline.resolver import Resolver
 from pipeline.validator import Validator
+from pipeline.mapper import map_to_public
 
 logging.basicConfig(level=logging.WARNING, format="%(levelname)s: %(message)s")
+
+if sys.platform == "win32":
+    try:
+        if hasattr(sys.stdout, "reconfigure"):
+            sys.stdout.reconfigure(encoding="utf-8")
+        if hasattr(sys.stderr, "reconfigure"):
+            sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 console = Console()
 
 SIMILARITY_THRESHOLD = 70.0
@@ -72,6 +84,34 @@ TEST_CASES = [
         "transcript_file": "test_05_sarcasm_fail.txt",
         "expected_file": "test_05_expected.json",
         "description": "Adversarial test (sarcasm rejection, joke proposals, unresolved disputes)",
+    },
+    {
+        "id": 6,
+        "name": "test_06_explicit_decision",
+        "transcript_file": "test_06_explicit_decision.txt",
+        "expected_file": "test_06_expected.json",
+        "description": "Explicit decision (proposal accepted with 'chốt': MongoDB log DB, 4 tasks, 1 blocker)",
+    },
+    {
+        "id": 7,
+        "name": "test_07_implicit_agreement",
+        "transcript_file": "test_07_implicit_agreement.txt",
+        "expected_file": "test_07_expected.json",
+        "description": "Implicit agreement without 'chốt' (accepted using 'ok', 'được', 'nhất trí': Tailwind UI, 3 tasks)",
+    },
+    {
+        "id": 8,
+        "name": "test_08_mixed_utterance",
+        "transcript_file": "test_08_mixed_utterance.txt",
+        "expected_file": "test_08_expected.json",
+        "description": "Mixed utterance (decision and task in single utterance: GCP staging migration, 5 tasks)",
+    },
+    {
+        "id": 9,
+        "name": "test_09_negative_control",
+        "transcript_file": "test_09_negative_control.txt",
+        "expected_file": "test_09_expected.json",
+        "description": "Negative control (discussion and tasks but 0 decisions accepted: deferred notifications, 4 tasks)",
     },
 ]
 
@@ -156,16 +196,117 @@ def match_items(
     }
 
 
+def match_decisions(
+    expected_decisions: List[Any],
+    actual_decisions: List[Any],
+    threshold: float = SIMILARITY_THRESHOLD,
+) -> Dict[str, Any]:
+    """
+    Match decisions by semantic content and the settled choice (topic + final_value),
+    evaluating status separately so a wrong status cannot be hidden by a content match.
+    Uses greedy 1-to-1 matching to avoid double-counting duplicate predictions.
+    """
+    exp_len = len(expected_decisions)
+    act_len = len(actual_decisions)
+
+    if exp_len == 0 and act_len == 0:
+        return {
+            "expected_count": 0,
+            "actual_count": 0,
+            "matched_count": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "matches": [],
+            "unmatched_expected": [],
+            "unmatched_actual": [],
+            "status_mismatches": [],
+        }
+
+    # Generate pairwise candidate matches
+    candidates: List[Tuple[float, int, int]] = []
+    status_mismatches: List[Dict[str, Any]] = []
+
+    for i, exp in enumerate(expected_decisions):
+        exp_text = f"{exp.topic}: {exp.final_value}"
+        exp_status = exp.status.value if hasattr(exp.status, "value") else str(exp.status)
+        for j, act in enumerate(actual_decisions):
+            act_text = f"{act.topic}: {act.final_value}"
+            act_status = act.status.value if hasattr(act.status, "value") else str(act.status)
+
+            score = fuzz.token_set_ratio(exp_text, act_text)
+            if score >= threshold:
+                if exp_status.lower() == act_status.lower():
+                    candidates.append((score, i, j))
+                else:
+                    status_mismatches.append(
+                        {
+                            "expected": exp_text,
+                            "expected_status": exp_status,
+                            "actual": act_text,
+                            "actual_status": act_status,
+                            "score": round(score, 1),
+                        }
+                    )
+
+    # Sort descending by similarity score
+    candidates.sort(key=lambda x: x[0], reverse=True)
+
+    matched_exp: set[int] = set()
+    matched_act: set[int] = set()
+    matches: List[Dict[str, Any]] = []
+
+    for score, i, j in candidates:
+        if i not in matched_exp and j not in matched_act:
+            matched_exp.add(i)
+            matched_act.add(j)
+            matches.append(
+                {
+                    "expected": f"{expected_decisions[i].topic}: {expected_decisions[i].final_value} [{expected_decisions[i].status}]",
+                    "actual": f"{actual_decisions[j].topic}: {actual_decisions[j].final_value} [{actual_decisions[j].status}]",
+                    "score": round(score, 1),
+                }
+            )
+
+    matched_count = len(matches)
+    precision = (matched_count / act_len) if act_len > 0 else (1.0 if exp_len == 0 else 0.0)
+    recall = (matched_count / exp_len) if exp_len > 0 else (1.0 if act_len == 0 else 0.0)
+    f1 = (2 * precision * recall / (precision + recall)) if (precision + recall) > 0 else 0.0
+
+    unmatched_exp = [
+        f"{expected_decisions[i].topic}: {expected_decisions[i].final_value}"
+        for i in range(exp_len)
+        if i not in matched_exp
+    ]
+    unmatched_act = [
+        f"{actual_decisions[j].topic}: {actual_decisions[j].final_value}"
+        for j in range(act_len)
+        if j not in matched_act
+    ]
+
+    return {
+        "expected_count": exp_len,
+        "actual_count": act_len,
+        "matched_count": matched_count,
+        "precision": round(precision, 4),
+        "recall": round(recall, 4),
+        "f1": round(f1, 4),
+        "matches": matches,
+        "unmatched_expected": unmatched_exp,
+        "unmatched_actual": unmatched_act,
+        "status_mismatches": status_mismatches,
+    }
+
+
 def compare_meeting_outputs(
     expected: ResolvedResult, actual: ResolvedResult
 ) -> Dict[str, Any]:
     """
-    Compare expected ResolvedResult with pipeline actual ResolvedResult across all categories.
+    Compare expected ResolvedResult with pipeline actual ResolvedResult across all categories,
+    using semantic decision matching with separate status verification.
     """
-    # 1. Decisions (by topic similarity)
-    exp_decisions = [d.topic for d in expected.decisions]
-    act_decisions = [d.topic for d in actual.decisions]
-    dec_res = match_items(exp_decisions, act_decisions)
+    # 1. Decisions (by semantic topic + settled choice and separate status evaluation)
+    dec_res = match_decisions(expected.decisions, actual.decisions)
 
     # 2. Action items (by task similarity)
     exp_actions = [a.task for a in expected.action_items]
@@ -225,6 +366,23 @@ def compare_meeting_outputs(
         else 0.0
     )
 
+    # Mapped public 4-group output counts (Decisions, Tasks, Unresolved, Issues)
+    try:
+        pub_actual = map_to_public(actual)
+        public_counts = {
+            "decisions": len(pub_actual.decisions),
+            "tasks": len(pub_actual.tasks),
+            "unresolved": len(pub_actual.unresolved),
+            "issues": len(pub_actual.issues),
+        }
+    except Exception:
+        public_counts = {
+            "decisions": len(actual.decisions),
+            "tasks": len(actual.action_items),
+            "unresolved": len(actual.unresolved_items),
+            "issues": len(actual.blockers),
+        }
+
     return {
         "categories": {
             "Decisions": dec_res,
@@ -241,12 +399,13 @@ def compare_meeting_outputs(
             "recall": round(total_recall, 4),
             "f1": round(total_f1, 4),
         },
+        "public_counts": public_counts,
     }
 
 
 def run_pipeline(transcript_path: Path) -> ResolvedResult:
     """
-    Run full Meeting Mind pipeline on raw transcript.
+    Execute full pipeline from raw text:
     Preprocess -> Extract -> Resolve -> Validate.
     """
     with open(transcript_path, "r", encoding="utf-8") as f:
@@ -309,12 +468,36 @@ def print_test_results_table(test_meta: Dict[str, Any], evaluation: Dict[str, An
         )
 
     console.print(table)
+    
+    # Print 4-group mapped counts
+    pub = evaluation.get("public_counts", {})
+    console.print(
+        f"[dim]Public 4-Group Mapped Output Counts: "
+        f"Decisions={pub.get('decisions', 0)}, Tasks={pub.get('tasks', 0)}, "
+        f"Unresolved={pub.get('unresolved', 0)}, Issues={pub.get('issues', 0)}[/dim]"
+    )
     console.print()
+
+
+def resolve_transcript_path(filename: str) -> Path:
+    """Resolve transcript file from transcripts or transcripts_extra dirs."""
+    tfile = Path(filename)
+    if tfile.is_absolute() and tfile.exists():
+        return tfile
+    if (config.TRANSCRIPTS_DIR / tfile).exists():
+        return config.TRANSCRIPTS_DIR / tfile
+    if (config.TESTS_DIR / "transcripts_extra" / "decisions" / tfile).exists():
+        return config.TESTS_DIR / "transcripts_extra" / "decisions" / tfile
+    if (config.TESTS_DIR / tfile).exists():
+        return config.TESTS_DIR / tfile
+    if (config.PROJECT_ROOT / tfile).exists():
+        return config.PROJECT_ROOT / tfile
+    return config.TRANSCRIPTS_DIR / tfile
 
 
 def run_single_test(test_meta: Dict[str, Any], mock: bool = False) -> Dict[str, Any]:
     """Execute evaluation for a single test case."""
-    transcript_path = config.TRANSCRIPTS_DIR / test_meta["transcript_file"]
+    transcript_path = resolve_transcript_path(test_meta["transcript_file"])
     expected_path = config.EXPECTED_DIR / test_meta["expected_file"]
 
     if not transcript_path.exists():
@@ -343,13 +526,14 @@ def run_single_test(test_meta: Dict[str, Any], mock: bool = False) -> Dict[str, 
         "status": "passed",
         "categories": evaluation["categories"],
         "totals": evaluation["totals"],
+        "public_counts": evaluation.get("public_counts", {}),
     }
 
 
 def print_overall_summary(test_results: List[Dict[str, Any]]) -> None:
-    """Print overall summary table across all executed tests."""
+    """Print overall summary table across all executed tests and Decisions breakdown."""
     table = Table(
-        title="[bold green]Overall Evaluation Summary[/bold green]",
+        title="[bold green]Overall Evaluation Summary (All Categories)[/bold green]",
         box=box.DOUBLE_EDGE,
         header_style="bold magenta",
         show_footer=True,
@@ -383,6 +567,55 @@ def print_overall_summary(test_results: List[Dict[str, Any]]) -> None:
         )
 
     console.print(table)
+    console.print()
+
+    # Dedicated Decisions breakdown table
+    dec_table = Table(
+        title="[bold cyan]Decisions Group Performance Breakdown (Semantic Match + Status)[/bold cyan]",
+        box=box.DOUBLE_EDGE,
+        header_style="bold blue",
+        show_footer=True,
+    )
+    dec_table.add_column("Test Name", style="bold white", footer="Overall Decisions")
+    dec_table.add_column("Expected", justify="center")
+    dec_table.add_column("Actual", justify="center")
+    dec_table.add_column("Matched", justify="center")
+    dec_table.add_column("Precision", justify="center")
+    dec_table.add_column("Recall", justify="center")
+    dec_table.add_column("F1-Score", justify="center")
+    dec_table.add_column("Mapped (D, T, U, I)", justify="center")
+
+    dec_tot_exp = sum(t["categories"].get("Decisions", {}).get("expected_count", 0) for t in test_results)
+    dec_tot_act = sum(t["categories"].get("Decisions", {}).get("actual_count", 0) for t in test_results)
+    dec_tot_mat = sum(t["categories"].get("Decisions", {}).get("matched_count", 0) for t in test_results)
+    dec_overall_p = (dec_tot_mat / dec_tot_act) if dec_tot_act > 0 else (1.0 if dec_tot_exp == 0 else 0.0)
+    dec_overall_r = (dec_tot_mat / dec_tot_exp) if dec_tot_exp > 0 else (1.0 if dec_tot_act == 0 else 0.0)
+    dec_overall_f1 = (2 * dec_overall_p * dec_overall_r / (dec_overall_p + dec_overall_r)) if (dec_overall_p + dec_overall_r) > 0 else 0.0
+
+    dec_table.columns[1].footer = str(dec_tot_exp)
+    dec_table.columns[2].footer = str(dec_tot_act)
+    dec_table.columns[3].footer = str(dec_tot_mat)
+    dec_table.columns[4].footer = format_percent(dec_overall_p)
+    dec_table.columns[5].footer = format_percent(dec_overall_r)
+    dec_table.columns[6].footer = format_percent(dec_overall_f1)
+    dec_table.columns[7].footer = "-"
+
+    for t in test_results:
+        d = t["categories"].get("Decisions", {})
+        pub = t.get("public_counts", {})
+        pub_str = f"({pub.get('decisions', 0)}, {pub.get('tasks', 0)}, {pub.get('unresolved', 0)}, {pub.get('issues', 0)})"
+        dec_table.add_row(
+            t["name"],
+            str(d.get("expected_count", 0)),
+            str(d.get("actual_count", 0)),
+            str(d.get("matched_count", 0)),
+            format_percent(d.get("precision", 0.0)),
+            format_percent(d.get("recall", 0.0)),
+            format_percent(d.get("f1", 0.0)),
+            pub_str,
+        )
+
+    console.print(dec_table)
 
 
 def save_results_to_file(test_results: List[Dict[str, Any]]) -> Path:
@@ -397,6 +630,13 @@ def save_results_to_file(test_results: List[Dict[str, Any]]) -> Path:
     overall_r = (tot_mat / tot_exp) if tot_exp > 0 else (1.0 if tot_act == 0 else 0.0)
     overall_f1 = (2 * overall_p * overall_r / (overall_p + overall_r)) if (overall_p + overall_r) > 0 else 0.0
 
+    dec_tot_exp = sum(t["categories"].get("Decisions", {}).get("expected_count", 0) for t in test_results)
+    dec_tot_act = sum(t["categories"].get("Decisions", {}).get("actual_count", 0) for t in test_results)
+    dec_tot_mat = sum(t["categories"].get("Decisions", {}).get("matched_count", 0) for t in test_results)
+    dec_overall_p = (dec_tot_mat / dec_tot_act) if dec_tot_act > 0 else (1.0 if dec_tot_exp == 0 else 0.0)
+    dec_overall_r = (dec_tot_mat / dec_tot_exp) if dec_tot_exp > 0 else (1.0 if dec_tot_act == 0 else 0.0)
+    dec_overall_f1 = (2 * dec_overall_p * dec_overall_r / (dec_overall_p + dec_overall_r)) if (dec_overall_p + dec_overall_r) > 0 else 0.0
+
     payload = {
         "timestamp": datetime.now().isoformat(),
         "total_tests": len(test_results),
@@ -407,6 +647,14 @@ def save_results_to_file(test_results: List[Dict[str, Any]]) -> Path:
             "precision": round(overall_p, 4),
             "recall": round(overall_r, 4),
             "f1": round(overall_f1, 4),
+        },
+        "decisions_summary": {
+            "expected_count": dec_tot_exp,
+            "actual_count": dec_tot_act,
+            "matched_count": dec_tot_mat,
+            "precision": round(dec_overall_p, 4),
+            "recall": round(dec_overall_r, 4),
+            "f1": round(dec_overall_f1, 4),
         },
         "tests": test_results,
     }
@@ -426,13 +674,13 @@ def main() -> None:
     group.add_argument(
         "--test",
         type=int,
-        choices=[1, 2, 3, 4, 5],
-        help="Run a specific test case by ID (1 to 5).",
+        choices=list(range(1, len(TEST_CASES) + 1)),
+        help=f"Run a specific test case by ID (1 to {len(TEST_CASES)}).",
     )
     group.add_argument(
         "--all",
         action="store_true",
-        help="Run all 5 test cases.",
+        help=f"Run all {len(TEST_CASES)} test cases.",
     )
     parser.add_argument(
         "--mock",

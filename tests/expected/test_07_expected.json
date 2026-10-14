@@ -1,0 +1,166 @@
+{
+  "meeting_summary": "Cuộc họp thống nhất chọn Tailwind UI components kết hợp Next.js App Router cho cổng quản trị nội bộ nhằm rút ngắn 30% thời gian xây dựng giao diện. Nhóm phân công nhiệm vụ khởi tạo repository, xuất tokens thiết kế và viết kịch bản kiểm thử, đồng thời ghi nhận đề xuất xin quyền npm organization.",
+  "participants": [
+    "Phong",
+    "Vy",
+    "An",
+    "Bình"
+  ],
+  "decisions": [
+    {
+      "item_id": "D001",
+      "topic": "Giải pháp UI library cho cổng quản trị nội bộ",
+      "final_value": "Dùng Tailwind UI kết hợp Next.js cho cổng quản trị nội bộ",
+      "status": "confirmed",
+      "condition": null,
+      "history": [
+        {
+          "value": "Dùng Tailwind UI kết hợp Next.js cho cổng quản trị nội bộ",
+          "status": "confirmed",
+          "speaker": "Phong",
+          "utterance_id": null,
+          "evidence": [
+            {
+              "speaker": "Phong",
+              "timestamp": "09:16",
+              "quote": "Nếu cả team đều thấy hợp lý thì chúng ta thống nhất dùng Tailwind UI kết hợp Next.js cho cổng quản trị nội bộ.",
+              "utterance_id": null,
+              "verified": false
+            },
+            {
+              "speaker": "Vy",
+              "timestamp": "09:19",
+              "quote": "Em hoàn toàn nhất trí.",
+              "utterance_id": null,
+              "verified": false
+            },
+            {
+              "speaker": "Bình",
+              "timestamp": "09:20",
+              "quote": "Được anh, triển khai theo hướng này đi.",
+              "utterance_id": null,
+              "verified": false
+            }
+          ]
+        }
+      ],
+      "needs_review": false
+    }
+  ],
+  "action_items": [
+    {
+      "item_id": "A001",
+      "task": "Khởi tạo repository và cấu hình base layout với Next.js",
+      "assignee": "An",
+      "assigned_by": "Phong",
+      "assignee_confirmed": true,
+      "confirmation_utterance_id": null,
+      "deadline": "17:00 ngày 24/10",
+      "dependencies": ["D001"],
+      "evidence": [
+        {
+          "speaker": "Phong",
+          "timestamp": "09:22",
+          "quote": "An khởi tạo repository và cấu hình base layout với Next.js nhé. Hạn chót 17:00 ngày 24/10.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "item_id": "A002",
+      "task": "Xuất bảng màu thương hiệu và typography tokens lên Figma",
+      "assignee": "Vy",
+      "assigned_by": "Phong",
+      "assignee_confirmed": true,
+      "confirmation_utterance_id": null,
+      "deadline": "12:00 ngày 23/10",
+      "dependencies": [],
+      "evidence": [
+        {
+          "speaker": "Phong",
+          "timestamp": "09:26",
+          "quote": "Vy phụ trách xuất bảng màu thương hiệu và typography tokens lên Figma. Hạn hoàn thành là 12:00 ngày 23/10.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "item_id": "A003",
+      "task": "Chuẩn bị kịch bản kiểm thử giao diện cho các màn hình phân quyền",
+      "assignee": "Bình",
+      "assigned_by": "Phong",
+      "assignee_confirmed": true,
+      "confirmation_utterance_id": null,
+      "deadline": "17:00 ngày 25/10",
+      "dependencies": [],
+      "evidence": [
+        {
+          "speaker": "Phong",
+          "timestamp": "09:32",
+          "quote": "Đúng rồi Bình, Bình hoàn thành kịch bản test trước 17:00 ngày 25/10 nhé.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    }
+  ],
+  "blockers": [
+    {
+      "item_id": "B001",
+      "issue": "Tài khoản npm tổ chức công ty chưa được cấp quyền tải gói thư viện riêng",
+      "owner": "An",
+      "status": "confirmed",
+      "evidence": [
+        {
+          "speaker": "An",
+          "timestamp": "09:34",
+          "quote": "Hiện tại tài khoản npm tổ chức công ty chưa được cấp quyền tải gói thư viện riêng, em cần DevOps hỗ trợ invite vào organization.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    }
+  ],
+  "requests": [
+    {
+      "item_id": "R001",
+      "type": "request",
+      "content": "Cấp quyền truy cập npm tổ chức công ty cho An",
+      "from_person": "An",
+      "to_person": "Phong",
+      "evidence": [
+        {
+          "speaker": "Phong",
+          "timestamp": "09:36",
+          "quote": "Anh ghi nhận vấn đề quyền truy cập npm của An. Anh sẽ ping admin IT cấp quyền ngay đầu giờ chiều nay.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    }
+  ],
+  "unresolved_items": [
+    {
+      "item_id": "UR001",
+      "topic": "Chọn thư viện biểu đồ doanh thu (Recharts hay ChartJS)",
+      "reason_unresolved": "Dời sang sprint sau bàn thảo luận tiếp",
+      "evidence": [
+        {
+          "speaker": "Phong",
+          "timestamp": "09:40",
+          "quote": "Vấn đề chọn thư viện biểu đồ Recharts hay ChartJS chúng ta sẽ bàn ở sprint sau nhé, hôm nay chưa vội.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    }
+  ]
+}

@@ -1,0 +1,143 @@
+{
+  "meeting_summary": "Cuộc họp rà soát phản hồi của khách hàng về hệ thống thông báo đẩy. Nhóm thống nhất chưa đưa ra bất kỳ quyết định thay đổi nào về cơ chế gom thông báo hay tích hợp Zalo ZNS mà tạm thời để ngỏ chờ thêm dữ liệu khảo sát, đồng thời phân công nhiệm vụ soạn bảng survey, thống kê log thông báo và cập nhật FAQ.",
+  "participants": [
+    "Sơn",
+    "Thảo",
+    "Quang",
+    "Hạnh"
+  ],
+  "decisions": [],
+  "action_items": [
+    {
+      "item_id": "A001",
+      "task": "Soạn thảo bảng khảo sát người dùng về tần suất nhận thông báo",
+      "assignee": "Thảo",
+      "assigned_by": "Sơn",
+      "assignee_confirmed": true,
+      "confirmation_utterance_id": null,
+      "deadline": "17:00 ngày 25/10",
+      "dependencies": [],
+      "evidence": [
+        {
+          "speaker": "Sơn",
+          "timestamp": "14:22",
+          "quote": "Thảo soạn thảo bảng khảo sát người dùng về tần suất nhận thông báo nhé. Hạn chót nộp bản thảo là 17:00 ngày 25/10.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "item_id": "A002",
+      "task": "Kiểm tra log push notification để thống kê tần suất gửi tin nhắn trung bình mỗi ngày",
+      "assignee": "Quang",
+      "assigned_by": "Sơn",
+      "assignee_confirmed": true,
+      "confirmation_utterance_id": null,
+      "deadline": "12:00 ngày 26/10",
+      "dependencies": [],
+      "evidence": [
+        {
+          "speaker": "Sơn",
+          "timestamp": "14:26",
+          "quote": "Quang kiểm tra lại log hệ thống push notification để thống kê tần suất gửi tin nhắn trung bình mỗi ngày. Hạn là 12:00 ngày 26/10.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "item_id": "A003",
+      "task": "Cập nhật tài liệu giải đáp thắc mắc (FAQ) về cách tắt bớt thông báo",
+      "assignee": "Hạnh",
+      "assigned_by": "Sơn",
+      "assignee_confirmed": true,
+      "confirmation_utterance_id": null,
+      "deadline": "17:00 ngày 27/10",
+      "dependencies": [],
+      "evidence": [
+        {
+          "speaker": "Hạnh",
+          "timestamp": "14:30",
+          "quote": "Bên chăm sóc khách hàng cần cập nhật tài liệu giải đáp thắc mắc (FAQ) về cách tắt bớt thông báo trong ứng dụng. Em sẽ hoàn thành trước 17:00 ngày 27/10.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "item_id": "A004",
+      "task": "Tạo issue trên Jira để theo dõi lỗi Firebase 503",
+      "assignee": "Quang",
+      "assigned_by": "Sơn",
+      "assignee_confirmed": true,
+      "confirmation_utterance_id": null,
+      "deadline": null,
+      "dependencies": [],
+      "evidence": [
+        {
+          "speaker": "Sơn",
+          "timestamp": "14:36",
+          "quote": "Quang tạo một issue trên Jira để theo dõi lỗi Firebase 503 này nhé.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    }
+  ],
+  "blockers": [
+    {
+      "item_id": "B001",
+      "issue": "Dịch vụ Firebase Messaging thỉnh thoảng trả về mã lỗi 503 khi gửi broadcast",
+      "owner": "Quang",
+      "status": "confirmed",
+      "evidence": [
+        {
+          "speaker": "Quang",
+          "timestamp": "14:34",
+          "quote": "Em muốn báo cáo thêm là dịch vụ Firebase Messaging thỉnh thoảng trả về mã lỗi 503 khi gửi broadcast.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    }
+  ],
+  "requests": [],
+  "unresolved_items": [
+    {
+      "item_id": "UR001",
+      "topic": "Đổi cơ chế thông báo sang dạng gom theo khung giờ",
+      "reason_unresolved": "Tạm thời để ngỏ, chưa chọn phương án nào, tuần sau làm khảo sát thêm rồi mới tính tiếp",
+      "evidence": [
+        {
+          "speaker": "Sơn",
+          "timestamp": "14:12",
+          "quote": "Vì vậy vấn đề đổi cơ chế thông báo tạm thời để ngỏ, chưa chọn phương án nào cả. Tuần sau làm khảo sát thêm rồi mới tính tiếp.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    },
+    {
+      "item_id": "UR002",
+      "topic": "Bổ sung kênh thông báo qua Zalo ZNS",
+      "reason_unresolved": "Chi phí đắt cần xin thêm ngân sách từ ban giám đốc, chưa thể chốt",
+      "evidence": [
+        {
+          "speaker": "Thảo",
+          "timestamp": "14:42",
+          "quote": "Chi phí tin nhắn ZNS khá đắt nên team cần xin thêm ngân sách từ ban giám đốc, chưa thể chốt gì bây giờ.",
+          "utterance_id": null,
+          "verified": false
+        }
+      ],
+      "needs_review": false
+    }
+  ]
+}
