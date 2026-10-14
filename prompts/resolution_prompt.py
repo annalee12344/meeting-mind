@@ -191,3 +191,18 @@ RESOLUTION_USER_TEMPLATE = """Dưới đây là kết quả trích xuất các p
 --- KẾT THÚC BƯỚC 1 DATA ---
 
 Dựa vào dữ liệu trên, hãy phân tích tiến trình thảo luận, theo dõi thay đổi quyết định theo thời gian (progression history), phân định rõ ràng những gì đã chốt (confirmed), bị thay thế (superseded), hoặc chưa giải quyết (unresolved), và trả về kết quả JSON hoàn chỉnh khớp với schema MeetingOutput."""
+
+
+def build_resolution_user_prompt(extraction_json: str) -> str:
+    """
+    Build structured resolution prompt with data demarcated clearly.
+    """
+    return (
+        "Dưới đây là kết quả trích xuất các phát biểu từ Bước 1 (dạng JSON ExtractionResult):\n\n"
+        "```json\n"
+        f"{extraction_json}\n"
+        "```\n\n"
+        "Dựa vào dữ liệu trên, hãy phân tích tiến trình thảo luận, theo dõi thay đổi quyết định theo thời gian "
+        "(progression history), phân định rõ ràng những gì đã chốt (confirmed), bị thay thế (superseded), "
+        "hoặc chưa giải quyết (unresolved), và trả về kết quả JSON hoàn chỉnh khớp với schema MeetingOutput."
+    )
