@@ -49,11 +49,10 @@ def are_action_items_duplicate(a1: ActionItem, a2: ActionItem) -> bool:
     uids1 = {ev.utterance_id for ev in (a1.evidence or []) if ev.utterance_id}
     uids2 = {ev.utterance_id for ev in (a2.evidence or []) if ev.utterance_id}
     has_shared_utterance = bool(uids1 and uids2 and (uids1 & uids2))
-
     if has_shared_utterance and set_ratio >= 75.0:
         return True
 
-    return set_ratio >= 80.0 and sort_ratio >= 60.0
+    return (set_ratio >= 85.0 and sort_ratio >= 50.0) or (set_ratio >= 80.0 and sort_ratio >= 55.0)
 
 
 def merge_two_action_items(a1: ActionItem, a2: ActionItem) -> ActionItem:

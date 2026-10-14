@@ -357,7 +357,7 @@ def are_public_tasks_duplicate(t1: PublicTask, t2: PublicTask) -> bool:
     if has_shared_utterance and set_ratio >= 75.0:
         return True
 
-    return set_ratio >= 80.0 and sort_ratio >= 60.0
+    return (set_ratio >= 85.0 and sort_ratio >= 50.0) or (set_ratio >= 80.0 and sort_ratio >= 55.0)
 
 
 def merge_two_public_tasks(t1: PublicTask, t2: PublicTask) -> PublicTask:
