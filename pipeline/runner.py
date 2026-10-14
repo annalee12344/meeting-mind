@@ -7,7 +7,7 @@ Step 0 (Preprocessor) -> Step 1 (Extractor) -> Step 2 (Resolver) -> Step 3 (Vali
 import logging
 from typing import Optional
 
-from models.output import MeetingOutput
+from models.output import ResolvedResult
 from pipeline.preprocessor import preprocess
 from pipeline.extractor import Extractor
 from pipeline.resolver import Resolver
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 def run_pipeline(
     raw_transcript: str,
     threshold: Optional[int] = None,
-) -> MeetingOutput:
+) -> ResolvedResult:
     """
     Execute full Meeting Mind 2-pass pipeline on transcript string.
 
@@ -28,7 +28,7 @@ def run_pipeline(
         threshold: Optional fuzzy matching threshold (0-100).
 
     Returns:
-        MeetingOutput containing structured, verified meeting results.
+        ResolvedResult containing structured, verified meeting results.
 
     Raises:
         ValueError: If transcript is empty.

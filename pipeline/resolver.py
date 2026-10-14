@@ -15,7 +15,7 @@ from pydantic import ValidationError
 
 import config
 from models.intermediate import ExtractionResult
-from models.output import MeetingOutput
+from models.output import ResolvedResult
 from prompts.resolution_prompt import RESOLUTION_SYSTEM_PROMPT, RESOLUTION_USER_TEMPLATE
 
 logger = logging.getLogger(__name__)
@@ -82,7 +82,7 @@ class Resolver:
         self,
         extraction_result: ExtractionResult,
         max_retries: int = 3,
-    ) -> MeetingOutput:
+    ) -> ResolvedResult:
         """
         Resolve discussion progression from Step 1 utterances.
 
@@ -91,14 +91,14 @@ class Resolver:
             max_retries: Maximum number of retry attempts upon JSON or validation errors.
 
         Returns:
-            MeetingOutput containing structured decisions, action items, blockers, etc.
+            ResolvedResult containing structured decisions, action items, blockers, etc.
 
         Raises:
             RuntimeError: If resolution fails after all retry attempts.
         """
         if not extraction_result.utterances:
-            logger.warning("Empty utterances provided to resolver. Returning empty MeetingOutput.")
-            return MeetingOutput(
+            logger.warning("Empty utterances provided to resolver. Returning empty ResolvedResult.")
+            return ResolvedResult(
                 meeting_summary="Cuộc họp không có nội dung trích xuất đáng kể.",
                 participants=[],
             )
@@ -120,7 +120,7 @@ class Resolver:
                 parsed_data = json.loads(cleaned_json)
 
                 # Validate with Pydantic model
-                output = MeetingOutput.model_validate(parsed_data)
+                output = ResolvedResult.model_validate(parsed_data)
                 logger.info(
                     f"[Step 2] Resolution succeeded: "
                     f"{len(output.decisions)} decisions, "

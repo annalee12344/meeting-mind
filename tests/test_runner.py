@@ -26,7 +26,7 @@ from rich.table import Table
 from rich import box
 
 import config
-from models.output import MeetingOutput
+from models.output import ResolvedResult
 from pipeline.preprocessor import preprocess
 from pipeline.extractor import Extractor
 from pipeline.resolver import Resolver
@@ -157,10 +157,10 @@ def match_items(
 
 
 def compare_meeting_outputs(
-    expected: MeetingOutput, actual: MeetingOutput
+    expected: ResolvedResult, actual: ResolvedResult
 ) -> Dict[str, Any]:
     """
-    Compare expected MeetingOutput with pipeline actual MeetingOutput across all categories.
+    Compare expected ResolvedResult with pipeline actual ResolvedResult across all categories.
     """
     # 1. Decisions (by topic similarity)
     exp_decisions = [d.topic for d in expected.decisions]
@@ -244,7 +244,7 @@ def compare_meeting_outputs(
     }
 
 
-def run_pipeline(transcript_path: Path) -> MeetingOutput:
+def run_pipeline(transcript_path: Path) -> ResolvedResult:
     """
     Run full Meeting Mind pipeline on raw transcript.
     Preprocess -> Extract -> Resolve -> Validate.
@@ -323,7 +323,7 @@ def run_single_test(test_meta: Dict[str, Any], mock: bool = False) -> Dict[str, 
         raise FileNotFoundError(f"Expected output file not found: {expected_path}")
 
     with open(expected_path, "r", encoding="utf-8") as f:
-        expected_output = MeetingOutput.model_validate_json(f.read())
+        expected_output = ResolvedResult.model_validate_json(f.read())
 
     console.print(f"[bold blue]Running {test_meta['name']}[/bold blue]: {test_meta['description']}")
 

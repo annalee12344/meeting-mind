@@ -11,7 +11,7 @@ from typing import Optional, Set
 from rapidfuzz import fuzz
 
 import config
-from models.output import MeetingOutput, Evidence
+from models.output import ResolvedResult, Evidence
 
 logger = logging.getLogger(__name__)
 
@@ -65,11 +65,11 @@ class Validator:
 
     def validate(
         self,
-        output: MeetingOutput,
+        output: ResolvedResult,
         original_transcript: str,
-    ) -> MeetingOutput:
+    ) -> ResolvedResult:
         """
-        Validate all evidence in MeetingOutput against the original transcript.
+        Validate all evidence in ResolvedResult against the original transcript.
 
         Performs:
         1. Fuzzy match on every Evidence quote -> sets evidence.verified

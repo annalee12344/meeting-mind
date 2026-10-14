@@ -17,7 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 import config
-from models.output import MeetingOutput
+from models.output import MeetingOutput, ResolvedResult
 from pipeline.runner import run_pipeline
 
 # Configure server logger
@@ -107,7 +107,7 @@ class AnalyzeRequest(BaseModel):
     )
 
 
-def load_sample_expected(sample: Dict[str, Any], threshold: Optional[int] = None) -> MeetingOutput:
+def load_sample_expected(sample: Dict[str, Any], threshold: Optional[int] = None) -> ResolvedResult:
     """Load precomputed expected benchmark output and validate evidence against transcript."""
     expected_path = config.EXPECTED_DIR / sample["expected_file"]
     transcript_path = config.TRANSCRIPTS_DIR / sample["filename"]
@@ -118,14 +118,14 @@ def load_sample_expected(sample: Dict[str, Any], threshold: Optional[int] = None
     with open(expected_path, "r", encoding="utf-8") as f:
         raw_json = json.load(f)
 
-    meeting_output = MeetingOutput.model_validate(raw_json)
+    resolved_result = ResolvedResult.model_validate(raw_json)
 
     if transcript_path.exists():
         transcript_text = transcript_path.read_text(encoding="utf-8")
         validator = Validator(threshold=threshold)
-        meeting_output = validator.validate(meeting_output, transcript_text)
+        resolved_result = validator.validate(resolved_result, transcript_text)
 
-    return meeting_output
+    return resolved_result
 
 
 def find_matching_sample(
