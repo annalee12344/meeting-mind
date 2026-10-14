@@ -27,11 +27,12 @@ from rich.table import Table
 from rich.text import Text
 
 import config
-from models.output import MeetingOutput
+from models.output import MeetingOutput, ResolvedResult
 from pipeline.preprocessor import preprocess
 from pipeline.extractor import Extractor
 from pipeline.resolver import Resolver
 from pipeline.validator import Validator
+from pipeline.mapper import map_to_public
 
 # Setup rich console for styled terminal output
 console = Console()
@@ -71,6 +72,20 @@ def parse_arguments() -> argparse.Namespace:
         default=None,
         help=f"Fuzzy match similarity threshold (0-100). Default: {config.FUZZY_MATCH_THRESHOLD}",
     )
+    parser.add_argument(
+        "--date", "--meeting-date",
+        dest="meeting_date",
+        type=str,
+        default=None,
+        help="Meeting date (YYYY-MM-DD or DD/MM/YYYY). Defaults to preamble date or today.",
+    )
+    parser.add_argument(
+        "--title", "--meeting-title",
+        dest="meeting_title",
+        type=str,
+        default=None,
+        help="Optional meeting title.",
+    )
     return parser.parse_args()
 
 
@@ -109,7 +124,7 @@ def display_final_summary(output: MeetingOutput, output_path: Path) -> None:
     # Meeting Summary Panel
     console.print(
         Panel(
-            Text(output.meeting_summary, style="italic green"),
+            Text(output.summary, style="italic green"),
             title="[bold yellow]Tóm tắt cuộc họp (Executive Summary)[/]",
             border_style="yellow",
         )
@@ -118,10 +133,12 @@ def display_final_summary(output: MeetingOutput, output_path: Path) -> None:
     # Participants
     participants_str = ", ".join(output.participants) if output.participants else "Không xác định"
     console.print(f"[bold cyan]Người tham gia:[/] {participants_str}\n")
+    if output.meta and output.meta.meeting_date:
+        console.print(f"[bold cyan]Ngày cuộc họp:[/] {output.meta.meeting_date} (nguồn: {output.meta.meeting_date_source})\n")
 
     # Overview Table
     summary_table = Table(
-        title="[bold green]Tổng hợp kết quả xử lý (Structured Items)[/]",
+        title="[bold green]Tổng hợp kết quả xử lý (4 Nhóm chuẩn)[/]",
         show_header=True,
         header_style="bold blue",
     )
@@ -138,24 +155,19 @@ def display_final_summary(output: MeetingOutput, output_path: Path) -> None:
         f"[red]{count_needs_review(output.decisions)}[/]" if count_needs_review(output.decisions) else "[green]0[/]",
     )
     summary_table.add_row(
-        "Việc cần làm (Action Items)",
-        str(len(output.action_items)),
-        f"[red]{count_needs_review(output.action_items)}[/]" if count_needs_review(output.action_items) else "[green]0[/]",
-    )
-    summary_table.add_row(
-        "Khó khăn / Rủi ro (Blockers)",
-        str(len(output.blockers)),
-        f"[red]{count_needs_review(output.blockers)}[/]" if count_needs_review(output.blockers) else "[green]0[/]",
-    )
-    summary_table.add_row(
-        "Yêu cầu / Góp ý (Requests)",
-        str(len(output.requests)),
-        f"[red]{count_needs_review(output.requests)}[/]" if count_needs_review(output.requests) else "[green]0[/]",
+        "Việc cần làm (Tasks)",
+        str(len(output.tasks)),
+        f"[red]{count_needs_review(output.tasks)}[/]" if count_needs_review(output.tasks) else "[green]0[/]",
     )
     summary_table.add_row(
         "Chưa giải quyết (Unresolved)",
-        str(len(output.unresolved_items)),
-        f"[red]{count_needs_review(output.unresolved_items)}[/]" if count_needs_review(output.unresolved_items) else "[green]0[/]",
+        str(len(output.unresolved)),
+        f"[red]{count_needs_review(output.unresolved)}[/]" if count_needs_review(output.unresolved) else "[green]0[/]",
+    )
+    summary_table.add_row(
+        "Vấn đề / Rào cản (Issues)",
+        str(len(output.issues)),
+        f"[red]{count_needs_review(output.issues)}[/]" if count_needs_review(output.issues) else "[green]0[/]",
     )
 
     console.print(summary_table)
@@ -164,75 +176,72 @@ def display_final_summary(output: MeetingOutput, output_path: Path) -> None:
     # Decisions Detail Table
     if output.decisions:
         dec_table = Table(
-            title="[bold green]Chi tiết quyết định & Tiến trình thảo luận[/]",
+            title="[bold green]Chi tiết quyết định đã chốt (Decisions)[/]",
             show_header=True,
             header_style="bold green",
         )
-        dec_table.add_column("Mã", width=6)
+        dec_table.add_column("Mã", width=8)
         dec_table.add_column("Chủ đề", width=20)
-        dec_table.add_column("Kết luận cuối cùng", width=35)
-        dec_table.add_column("Trạng thái", width=12)
-        dec_table.add_column("Lịch sử thay đổi", min_width=25)
+        dec_table.add_column("Nội dung quyết định", width=35)
+        dec_table.add_column("Đề xuất bởi", width=14)
+        dec_table.add_column("Chốt bởi", width=14)
         dec_table.add_column("Xác thực", width=10)
 
         for d in output.decisions:
-            hist_str = "\n".join([f"- {h.value} ({h.status.value})" for h in d.history]) or "N/A"
-            status_style = "green" if d.status.value == "confirmed" else "yellow"
             review_str = "[bold red]CẦN XEM LẠI[/]" if d.needs_review else "[bold green]HỢP LỆ[/]"
-
+            ref_str = d.source_ref or d.id[:6]
             dec_table.add_row(
-                d.item_id,
+                ref_str,
                 d.topic,
-                d.final_value,
-                f"[{status_style}]{d.status.value}[/]",
-                hist_str,
+                d.content,
+                d.proposed_by or "N/A",
+                d.confirmed_by or "N/A",
                 review_str,
             )
         console.print(dec_table)
         console.print()
 
-    # Action Items Detail Table
-    if output.action_items:
-        ai_table = Table(
-            title="[bold blue]Chi tiết việc cần làm (Action Items)[/]",
+    # Tasks Detail Table
+    if output.tasks:
+        task_table = Table(
+            title="[bold blue]Chi tiết việc cần làm (Tasks)[/]",
             show_header=True,
             header_style="bold blue",
         )
-        ai_table.add_column("Mã", width=6)
-        ai_table.add_column("Nhiệm vụ", width=35)
-        ai_table.add_column("Người nhận", width=15)
-        ai_table.add_column("Hạn chót", width=15)
-        ai_table.add_column("Xác thực", width=10)
+        task_table.add_column("Mã", width=8)
+        task_table.add_column("Nhiệm vụ", width=35)
+        task_table.add_column("Người nhận", width=15)
+        task_table.add_column("Hạn chót (ISO)", width=18)
+        task_table.add_column("Xác thực", width=10)
 
-        for a in output.action_items:
-            review_str = "[bold red]CẦN XEM LẠI[/]" if a.needs_review else "[bold green]HỢP LỆ[/]"
-            ai_table.add_row(
-                a.item_id,
-                a.task,
-                a.assignee or "Chưa phân công",
-                a.deadline or "Chưa rõ",
+        for t in output.tasks:
+            review_str = "[bold red]CẦN XEM LẠI[/]" if t.needs_review else "[bold green]HỢP LỆ[/]"
+            ref_str = t.source_ref or t.id[:6]
+            deadline_display = t.deadline_iso or t.deadline_raw or "Chưa rõ"
+            task_table.add_row(
+                ref_str,
+                t.title,
+                t.assignee or "Chưa phân công",
+                deadline_display,
                 review_str,
             )
-        console.print(ai_table)
+        console.print(task_table)
         console.print()
 
     # Warnings for items needing review
     warnings: list[str] = []
     for d in output.decisions:
         if d.needs_review:
-            warnings.append(f"Quyết định [bold]{d.item_id}[/] ({d.topic}): Bằng chứng không khớp hoặc thiếu dữ liệu.")
-    for a in output.action_items:
-        if a.needs_review:
-            warnings.append(f"Action Item [bold]{a.item_id}[/] ({a.task}): Bằng chứng chưa được xác minh.")
-    for b in output.blockers:
-        if b.needs_review:
-            warnings.append(f"Blocker [bold]{b.item_id}[/] ({b.issue}): Bằng chứng chưa được xác minh.")
-    for r in output.requests:
-        if r.needs_review:
-            warnings.append(f"Request [bold]{r.item_id}[/] ({r.content}): Bằng chứng chưa được xác minh.")
-    for u in output.unresolved_items:
+            warnings.append(f"Quyết định [bold]{d.source_ref or d.id[:6]}[/] ({d.topic}): Bằng chứng không khớp hoặc thiếu dữ liệu.")
+    for t in output.tasks:
+        if t.needs_review:
+            warnings.append(f"Task [bold]{t.source_ref or t.id[:6]}[/] ({t.title}): Cần xem xét lại người nhận hoặc hạn chót.")
+    for u in output.unresolved:
         if u.needs_review:
-            warnings.append(f"Unresolved [bold]{u.item_id}[/] ({u.topic}): Bằng chứng chưa được xác minh.")
+            warnings.append(f"Unresolved [bold]{u.source_ref or u.id[:6]}[/] ({u.content}): Vấn đề chưa giải quyết cần xem xét.")
+    for i in output.issues:
+        if i.needs_review:
+            warnings.append(f"Issue [bold]{i.source_ref or i.id[:6]}[/] ({i.content}): Vấn đề cần xem xét.")
 
     if warnings:
         warn_text = "\n".join([f"• {w}" for w in warnings])
@@ -331,7 +340,22 @@ def main() -> int:
         console.print("[bold green]✔ Bước 3 hoàn tất:[/] Đã đối chiếu bằng chứng với văn bản gốc.")
         console.print()
 
-        # 4. Save Output JSON
+        # ── Step 4: Deterministic Mapping ──
+        with console.status("[bold green]Bước 4: Ánh xạ cấu trúc dữ liệu theo 4 nhóm chuẩn (Decisions, Tasks, Unresolved, Issues)...[/]"):
+            public_output = map_to_public(
+                validated_output,
+                transcript=raw_text,
+                meeting_date_input=args.meeting_date,
+            )
+
+        console.print(
+            f"[bold green]✔ Bước 4 hoàn tất:[/] Đã ánh xạ "
+            f"({len(public_output.decisions)} quyết định, {len(public_output.tasks)} việc cần làm, "
+            f"{len(public_output.unresolved)} chưa giải quyết, {len(public_output.issues)} vướng mắc)."
+        )
+        console.print()
+
+        # 5. Save Output JSON
         if args.output:
             out_file = Path(args.output)
         else:
@@ -341,12 +365,12 @@ def main() -> int:
 
         out_file.parent.mkdir(parents=True, exist_ok=True)
         out_file.write_text(
-            json.dumps(validated_output.model_dump(), ensure_ascii=False, indent=2),
+            json.dumps(public_output.model_dump(), ensure_ascii=False, indent=2),
             encoding="utf-8",
         )
 
-        # 5. Display Summary
-        display_final_summary(validated_output, out_file)
+        # 6. Display Summary
+        display_final_summary(public_output, out_file)
         return 0
 
     except KeyboardInterrupt:
