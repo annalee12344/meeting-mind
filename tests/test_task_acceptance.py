@@ -28,7 +28,7 @@ class TestTaskAcceptance(unittest.TestCase):
         self.assertEqual(u1.role, UtteranceRole.ACCEPTS)
 
     def test_prompt_version_and_acceptance_guidelines(self):
-        self.assertEqual(PROMPT_VERSION, "2.0.0")
+        self.assertEqual(PROMPT_VERSION, "2.1.0")
 
         # Verify extraction prompt contains accepts and declines
         self.assertIn('"accepts"', EXTRACTION_SYSTEM_PROMPT)
