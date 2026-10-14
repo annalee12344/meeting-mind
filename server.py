@@ -91,11 +91,14 @@ SAMPLE_CATALOG: List[Dict[str, Any]] = [
 
 import json
 from pipeline.validator import Validator
+from pipeline.mapper import map_to_public
 
 class AnalyzeRequest(BaseModel):
     """Payload for POST /api/analyze."""
     transcript: str = Field(..., description="Raw meeting transcript text to analyze.")
     meeting_name: Optional[str] = Field(default=None, description="Optional meeting name or title.")
+    meeting_title: Optional[str] = Field(default=None, description="Optional meeting title (alias for meeting_name).")
+    meeting_date: Optional[str] = Field(default=None, description="Optional meeting date (YYYY-MM-DD or DD/MM/YYYY).")
     sample_id: Optional[str] = Field(default=None, description="Optional ID of known sample.")
     use_sample_cache: Optional[bool] = Field(
         default=True,
@@ -285,7 +288,10 @@ def get_sample_result(sample_id: str, threshold: Optional[int] = None) -> Meetin
 
     try:
         logger.info(f"Serving precomputed verified result for sample '{target['id']}' ({target['title']})")
-        return load_sample_expected(target, threshold=threshold)
+        resolved = load_sample_expected(target, threshold=threshold)
+        file_path = config.TRANSCRIPTS_DIR / target["filename"]
+        transcript_content = file_path.read_text(encoding="utf-8") if file_path.exists() else None
+        return map_to_public(resolved, transcript=transcript_content)
     except Exception as exc:
         logger.exception(f"Failed to load expected output for '{sample_id}':")
         raise HTTPException(
@@ -308,6 +314,8 @@ def analyze_transcript(request: AnalyzeRequest) -> MeetingOutput:
             detail="Transcript is empty. Please provide meeting text to analyze.",
         )
 
+    effective_title = request.meeting_title or request.meeting_name or "Untitled Meeting"
+
     # 1. Check if input matches one of the precomputed benchmark samples
     if request.use_sample_cache:
         matched_sample = find_matching_sample(clean_text, request.sample_id)
@@ -316,7 +324,12 @@ def analyze_transcript(request: AnalyzeRequest) -> MeetingOutput:
                 f"Transcript matches benchmark sample '{matched_sample['id']}' ({matched_sample['title']}). "
                 "Returning precomputed, verified results instantly (0 Gemini API calls)."
             )
-            return load_sample_expected(matched_sample, threshold=request.threshold)
+            resolved = load_sample_expected(matched_sample, threshold=request.threshold)
+            return map_to_public(
+                resolved,
+                transcript=clean_text,
+                meeting_date_input=request.meeting_date,
+            )
 
     # 2. For custom / modified transcripts, invoke Gemini pipeline
     if not config.GEMINI_API_KEY or config.GEMINI_API_KEY == "your_api_key_here":
@@ -326,14 +339,19 @@ def analyze_transcript(request: AnalyzeRequest) -> MeetingOutput:
         )
 
     try:
-        meeting_title = request.meeting_name or "Untitled Meeting"
-        logger.info(f"Starting transcript analysis for '{meeting_title}' ({len(clean_text)} chars)...")
-        output = run_pipeline(clean_text, threshold=request.threshold)
-        logger.info(
-            f"Analysis completed successfully: {len(output.decisions)} decisions, "
-            f"{len(output.action_items)} action items."
+        logger.info(f"Starting transcript analysis for '{effective_title}' ({len(clean_text)} chars)...")
+        resolved = run_pipeline(clean_text, threshold=request.threshold)
+        public_output = map_to_public(
+            resolved,
+            transcript=clean_text,
+            meeting_date_input=request.meeting_date,
         )
-        return output
+        logger.info(
+            f"Analysis completed successfully: {len(public_output.decisions)} decisions, "
+            f"{len(public_output.tasks)} tasks, {len(public_output.unresolved)} unresolved, "
+            f"{len(public_output.issues)} issues."
+        )
+        return public_output
 
     except ValueError as val_err:
         logger.warning(f"Validation error during analysis: {val_err}")

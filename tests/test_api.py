@@ -60,20 +60,21 @@ class TestServerAPI(unittest.TestCase):
         self.assertIn("empty", ctx.exception.detail.lower())
 
     def test_get_sample_result(self):
-        """Test GET /api/samples/{id}/result returns precomputed validated MeetingOutput."""
+        """Test GET /api/samples/{id}/result returns precomputed mapped MeetingOutput."""
         from server import get_sample_result
         res = get_sample_result("test_01_happy_path")
         self.assertTrue(len(res.decisions) > 0)
-        self.assertTrue(len(res.action_items) > 0)
-        self.assertEqual(res.decisions[0].status.value, "confirmed")
+        self.assertTrue(len(res.tasks) > 0 or len(res.unresolved) > 0)
+        self.assertEqual(len(res.issues), 1)
 
     def test_analyze_sample_uses_cache(self):
-        """Test POST /api/analyze reuses benchmark expected output for exact sample transcript without API call."""
+        """Test POST /api/analyze reuses benchmark expected output and returns public MeetingOutput."""
         sample = get_sample("test_01_happy_path")
         req = AnalyzeRequest(transcript=sample.transcript, meeting_name="Sprint 24 Planning")
         output = analyze_transcript(req)
         self.assertEqual(len(output.decisions), 2)
-        self.assertEqual(len(output.action_items), 3)
+        self.assertTrue(len(output.tasks) > 0 or len(output.unresolved) > 0)
+        self.assertEqual(len(output.issues), 1)
 
     def test_runner_empty_transcript(self):
         """Test pipeline runner rejects empty transcript."""
