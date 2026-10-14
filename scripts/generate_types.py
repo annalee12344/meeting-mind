@@ -141,6 +141,10 @@ export interface PublicTask {
   source: 'ai' | 'manual' | 'from_unresolved';
   evidence: Evidence[];
   needs_review: boolean;
+  external_dependency?: string | null;
+  collaborator?: string | null;
+  reviewer?: string | null;
+  escalation?: string | null;
 }
 
 export interface PublicUnresolvedItem {
@@ -263,6 +267,10 @@ export interface MeetingOverlay {
   source: 'ai' | 'manual' | 'from_unresolved';
   evidence: Evidence[];
   needs_review: boolean;
+  external_dependency?: string | null;
+  collaborator?: string | null;
+  reviewer?: string | null;
+  escalation?: string | null;
   created_at: string;
   completed_at?: string | null;
 }

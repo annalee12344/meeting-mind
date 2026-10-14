@@ -203,26 +203,20 @@ class TestMapper(unittest.TestCase):
 
         public_out = map_to_public(resolved, transcript=transcript)
 
-        # Only a1 should become a confirmed Task
-        self.assertEqual(len(public_out.tasks), 1)
-        self.assertEqual(public_out.tasks[0].title, "Setup MongoDB")
-        self.assertEqual(public_out.tasks[0].assignee, "Lan")
+        # a1 (Lan), a2 (Hương), a4 (Hương) have explicit assignees -> Confirmed Tasks
+        self.assertEqual(len(public_out.tasks), 3)
+        task_titles = [t.title for t in public_out.tasks]
+        self.assertIn("Setup MongoDB", task_titles)
+        self.assertIn("Design UI", task_titles)
+        self.assertIn("Test staging", task_titles)
 
-        # a2, a3, a4 should be downgraded to unresolved (unconfirmed_task)
+        # a3 (generic "ai đó") should be downgraded to unresolved (unconfirmed_task)
         unconfirmed = [u for u in public_out.unresolved if u.kind == "unconfirmed_task"]
-        self.assertEqual(len(unconfirmed), 3)
-
-        # a2 suggested_assignee is Hương
-        u_a2 = next(u for u in unconfirmed if u.source_ref == "A002")
-        self.assertEqual(u_a2.suggested_assignee, "Hương")
+        self.assertEqual(len(unconfirmed), 1)
 
         # a3 suggested_assignee should be None (generic)
         u_a3 = next(u for u in unconfirmed if u.source_ref == "A003")
         self.assertIsNone(u_a3.suggested_assignee)
-
-        # a4 suggested_assignee is Hương
-        u_a4 = next(u for u in unconfirmed if u.source_ref == "A004")
-        self.assertEqual(u_a4.suggested_assignee, "Hương")
 
     def test_map_requests_and_blockers(self):
         # Request with clear assignee -> Tasks

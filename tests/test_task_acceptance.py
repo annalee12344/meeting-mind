@@ -28,19 +28,17 @@ class TestTaskAcceptance(unittest.TestCase):
         self.assertEqual(u1.role, UtteranceRole.ACCEPTS)
 
     def test_prompt_version_and_acceptance_guidelines(self):
-        self.assertEqual(PROMPT_VERSION, "2.1.0")
+        self.assertEqual(PROMPT_VERSION, "2.2.0")
 
         # Verify extraction prompt contains accepts and declines
         self.assertIn('"accepts"', EXTRACTION_SYSTEM_PROMPT)
         self.assertIn('"declines"', EXTRACTION_SYSTEM_PROMPT)
 
-        # Verify resolution prompt contains task acceptance rules and examples
-        self.assertIn("TASK ACCEPTANCE & ASSIGNEE_CONFIRMED", RESOLUTION_SYSTEM_PROMPT)
-        self.assertIn("Lan, setup the database by Friday", RESOLUTION_SYSTEM_PROMPT)
-        self.assertIn("Ok anh, em làm", RESOLUTION_SYSTEM_PROMPT)
-        self.assertIn("Mình sẽ làm phần đó", RESOLUTION_SYSTEM_PROMPT)
+        # Verify resolution prompt contains task ownership and role separation rules
+        self.assertIn("TASK OWNERSHIP & ROLE SEPARATION", RESOLUTION_SYSTEM_PROMPT)
         self.assertIn("assignee_confirmed", RESOLUTION_SYSTEM_PROMPT)
-        self.assertIn("confirmation_utterance_id", RESOLUTION_SYSTEM_PROMPT)
+        self.assertIn("external_dependency", RESOLUTION_SYSTEM_PROMPT)
+        self.assertIn("reviewer", RESOLUTION_SYSTEM_PROMPT)
 
     def test_task_acceptance_guard_in_mapper(self):
         participants = ["Tuấn", "Lan", "Hương"]
@@ -66,7 +64,7 @@ class TestTaskAcceptance(unittest.TestCase):
         self.assertEqual(out1.tasks[0].assigned_by, "Tuấn")
         self.assertEqual(len(out1.unresolved), 0)
 
-        # Case 2: Silence / No confirmation
+        # Case 2: Named assignee without verbal confirmation (remains assigned task)
         a2 = ActionItem(
             item_id="A002",
             task="Setup database",
@@ -81,12 +79,11 @@ class TestTaskAcceptance(unittest.TestCase):
             action_items=[a2],
         )
         out2 = map_to_public(res2, transcript=transcript)
-        self.assertEqual(len(out2.tasks), 0)
-        self.assertEqual(len(out2.unresolved), 1)
-        self.assertEqual(out2.unresolved[0].kind, "unconfirmed_task")
-        self.assertEqual(out2.unresolved[0].suggested_assignee, "Lan")
+        self.assertEqual(len(out2.tasks), 1)
+        self.assertEqual(out2.tasks[0].assignee, "Lan")
+        self.assertEqual(len(out2.unresolved), 0)
 
-        # Case 3: Third person agrees instead of assignee (Tuấn assigned Lan, but Tuấn spoke U001)
+        # Case 3: Third person agrees instead of assignee (remains assigned to Lan)
         a3 = ActionItem(
             item_id="A003",
             task="Setup database",
@@ -101,10 +98,26 @@ class TestTaskAcceptance(unittest.TestCase):
             action_items=[a3],
         )
         out3 = map_to_public(res3, transcript=transcript)
-        self.assertEqual(len(out3.tasks), 0)
-        self.assertEqual(len(out3.unresolved), 1)
-        self.assertEqual(out3.unresolved[0].kind, "unconfirmed_task")
-        self.assertEqual(out3.unresolved[0].suggested_assignee, "Lan")
+        self.assertEqual(len(out3.tasks), 1)
+        self.assertEqual(out3.tasks[0].assignee, "Lan")
+        self.assertEqual(len(out3.unresolved), 0)
+
+        # Case 4: No identifiable assignee -> Unresolved (unconfirmed_task)
+        a4 = ActionItem(
+            item_id="A004",
+            task="Cần liên hệ đối tác kiểm tra sandbox",
+            assignee=None,
+            assigned_by="Tuấn",
+        )
+        res4 = ResolvedResult(
+            meeting_summary="Summary",
+            participants=participants,
+            action_items=[a4],
+        )
+        out4 = map_to_public(res4, transcript=transcript)
+        self.assertEqual(len(out4.tasks), 0)
+        self.assertEqual(len(out4.unresolved), 1)
+        self.assertEqual(out4.unresolved[0].kind, "unconfirmed_task")
 
 
 if __name__ == "__main__":

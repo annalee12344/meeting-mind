@@ -6,7 +6,7 @@ Prompt này yêu cầu Gemini phân tích biên bản cuộc họp tiếng Việ
 loại thông tin (type) và vai trò thảo luận (role), đồng thời trích dẫn NGUYÊN VĂN (verbatim).
 """
 
-PROMPT_VERSION = "2.1.0"
+PROMPT_VERSION = "2.2.0"
 
 EXTRACTION_SYSTEM_PROMPT = """Bạn là trợ lý AI chuyên nghiệp phân tích biên bản cuộc họp tiếng Việt.
 Nhiệm vụ của bạn là đọc biên bản cuộc họp đã được đánh mã phát biểu ([U001], [U002]...) và trích xuất tất cả các phát biểu có ý nghĩa quan trọng về mặt công việc, quyết định, phân công và tiến độ.
@@ -56,7 +56,7 @@ QUY TẮC CỐT LÕI (BẮT BUỘC TUÂN THỦ):
    - "conditions": Đặt điều kiện tiên quyết ("nếu...", "với điều kiện là...").
    - "informs": Cung cấp thông tin, dữ liệu, ngữ cảnh.
    - "requests": Yêu cầu ai đó làm việc gì hoặc hỗ trợ.
-   - "assigns": Phân công, giao việc trực tiếp cho người cụ thể (ví dụ: "Nam setup DB nhé").
+   - "assigns": Phân công, giao việc trực tiếp cho người cụ thể (ví dụ: "Minh: Bình tiếp tục liên hệ đối tác nhé"). Người được chỉ định đích danh là người chịu trách nhiệm (assignee), không đòi hỏi họ phải nói "Tôi nhận việc". Tuyệt đối không gộp đối tác hay bên thứ ba vào người phụ trách.
    - "accepts": Xác nhận nhận việc / đồng ý thực hiện (ví dụ: "Ok anh, em làm", "Mình sẽ phụ trách").
    - "declines": Từ chối nhận việc / không thể đảm nhận.
    - "questions": Đặt câu hỏi thắc mắc hoặc chất vấn.

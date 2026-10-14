@@ -116,6 +116,128 @@ def is_generic_assignee(name: Optional[str]) -> bool:
     return cleaned in GENERIC_ASSIGNEES
 
 
+EXTERNAL_KEYWORDS = (
+    "đối tác", "doi tac", "partner", "khách hàng", "khach hang", "customer",
+    "client", "vendor", "bên thứ ba", "ben thu ba", "third party", "vnpay",
+    "account manager", "bên ngoài"
+)
+
+REVIEWER_KEYWORDS = (
+    "duyệt", "duyet", "review", "approve", "kiểm tra", "kiem tra", "check"
+)
+
+COLLABORATOR_KEYWORDS = (
+    "phối hợp", "phoi hop", "cùng", "cung", "team", "nhóm", "nhom"
+)
+
+
+def parse_assignee_and_roles(
+    raw_assignee: Optional[str],
+    participants: Optional[List[str]] = None,
+) -> Tuple[Optional[str], Optional[str], Optional[str], Optional[str]]:
+    """
+    Parse a potentially compound or multi-role assignee string.
+    Returns: (assignee, external_dependency, reviewer, collaborator)
+
+    Distinguishes internal performer from external dependencies, reviewers, and collaborators.
+    Examples:
+    - "Bình / Đối tác" -> ("Bình", "Đối tác", None, None)
+    - "Bình / Đối tác VNPay" -> ("Bình", "Đối tác VNPay", None, None)
+    - "Bình và đối tác" -> ("Bình", "đối tác", None, None)
+    - "Tuấn / Mai duyệt" -> ("Tuấn", None, "Mai", None)
+    - "Tuấn (Mai duyệt)" -> ("Tuấn", None, "Mai", None)
+    - "Mai phối hợp với team sản phẩm" -> ("Mai", None, None, "team sản phẩm")
+    - "Đối tác" (not in participants) -> (None, "Đối tác", None, None)
+    """
+    if not raw_assignee or not raw_assignee.strip():
+        return None, None, None, None
+
+    clean = raw_assignee.strip()
+
+    reviewer: Optional[str] = None
+    collaborator: Optional[str] = None
+    external_dep: Optional[str] = None
+    assignee: Optional[str] = None
+
+    # 1. Check parenthesized note, e.g. "Tuấn (Mai duyệt)" or "Bình (đối tác)"
+    paren_match = re.match(r"^(.*?)\s*\((.*?)\)$", clean)
+    if paren_match:
+        clean = paren_match.group(1).strip()
+        extra = paren_match.group(2).strip()
+        extra_lower = extra.lower()
+        if any(kw in extra_lower for kw in REVIEWER_KEYWORDS):
+            rev_name = re.sub(r"^(?:review|duyệt|kiểm tra|approve|check)\s*:?\s*", "", extra, flags=re.IGNORECASE).strip()
+            rev_name = re.sub(r"\s+(?:review|duyệt|kiểm tra|approve|check)$", "", rev_name, flags=re.IGNORECASE).strip()
+            reviewer = normalize_person_name(rev_name, participants)
+        elif any(kw in extra_lower for kw in COLLABORATOR_KEYWORDS):
+            collaborator = extra
+        elif any(kw in extra_lower for kw in EXTERNAL_KEYWORDS):
+            external_dep = extra
+        else:
+            external_dep = extra
+
+    # 2. Check for explicit delimiters: '/', ' và ', ' & ', ' kèm ', ','
+    delimiters = [r"\s*/\s*", r"\s+và\s+", r"\s*&\s*", r"\s+kèm\s+", r",\s*"]
+    split_parts: List[str] = []
+    for delim in delimiters:
+        parts = [p.strip() for p in re.split(delim, clean) if p.strip()]
+        if len(parts) > 1:
+            split_parts = parts
+            break
+
+    if split_parts:
+        matched_assignee = None
+        remaining_parts = []
+        for part in split_parts:
+            norm_p = normalize_person_name(part, participants)
+            if participants and norm_p in participants and matched_assignee is None:
+                matched_assignee = norm_p
+            else:
+                remaining_parts.append(part)
+
+        if matched_assignee:
+            assignee = matched_assignee
+        else:
+            assignee = split_parts[0]
+            remaining_parts = split_parts[1:]
+
+        for rem in remaining_parts:
+            rem_lower = rem.lower()
+            if any(kw in rem_lower for kw in REVIEWER_KEYWORDS) and not reviewer:
+                rev_name = re.sub(r"^(?:review|duyệt|kiểm tra|approve|check)\s*:?\s*", "", rem, flags=re.IGNORECASE).strip()
+                rev_name = re.sub(r"\s+(?:review|duyệt|kiểm tra|approve|check)$", "", rev_name, flags=re.IGNORECASE).strip()
+                reviewer = normalize_person_name(rev_name, participants) if rev_name else rem
+            elif any(kw in rem_lower for kw in COLLABORATOR_KEYWORDS) and not collaborator:
+                collaborator = rem
+            elif not external_dep:
+                external_dep = rem
+
+        return assignee, external_dep, reviewer, collaborator
+
+    # 3. Check inline phrases:
+    rev_match = re.search(r"^(.*?)\s+(?:gửi|cho|để)\s+(.*?)\s+(?:duyệt|review|kiểm tra)$", clean, re.IGNORECASE)
+    if rev_match:
+        assignee = normalize_person_name(rev_match.group(1).strip(), participants)
+        reviewer = normalize_person_name(rev_match.group(2).strip(), participants)
+        return assignee, external_dep, reviewer, collaborator
+
+    collab_match = re.search(r"^(.*?)\s+phối hợp\s+(?:với|cùng)?\s+(.+)$", clean, re.IGNORECASE)
+    if collab_match:
+        assignee = normalize_person_name(collab_match.group(1).strip(), participants)
+        collaborator = collab_match.group(2).strip()
+        return assignee, external_dep, reviewer, collaborator
+
+    # 4. Check if standalone name is purely an external entity (e.g. "Đối tác", "Đối tác VNPay")
+    clean_lower = clean.lower()
+    norm_single = normalize_person_name(clean, participants)
+    is_in_participants = participants and (norm_single in participants)
+    if not is_in_participants and any(kw in clean_lower for kw in EXTERNAL_KEYWORDS):
+        return None, clean, reviewer, collaborator
+
+    # 5. Single assignee
+    return clean, external_dep, reviewer, collaborator
+
+
 def build_utterance_speaker_map(
     resolved_result: ResolvedResult,
     transcript: Optional[str] = None,
@@ -310,27 +432,31 @@ def map_to_public(
         )
 
     # ─────────────────────────────────────────────────────────────────────────
-    # 3. Map Action Items (with Task Acceptance Guard)
+    # 3. Map Action Items (Ownership & Role Separation)
     # ─────────────────────────────────────────────────────────────────────────
     for a in resolved_result.action_items:
         deadline_raw = a.deadline
-        deadline_iso = convert_deadline_to_iso(deadline_raw, meeting_date_obj)
+        is_rel_allowed = (date_source != "fallback_today")
+        deadline_iso = convert_deadline_to_iso(
+            deadline_raw, meeting_date_obj, is_relative_allowed=is_rel_allowed
+        )
 
-        raw_assignee = a.assignee
-        norm_assignee = normalize_person_name(raw_assignee, participants) if raw_assignee else None
+        # Parse compound assignee strings (e.g. "Bình / Đối tác", "Tuấn / Mai duyệt")
+        parsed_assignee, parsed_ext_dep, parsed_rev, parsed_collab = parse_assignee_and_roles(
+            a.assignee, participants
+        )
+
+        ext_dep = getattr(a, "external_dependency", None) or parsed_ext_dep
+        collab = getattr(a, "collaborator", None) or parsed_collab
+        rev = getattr(a, "reviewer", None) or parsed_rev
+        escalation = getattr(a, "escalation", None)
+
+        norm_assignee = normalize_person_name(parsed_assignee, participants) if parsed_assignee else None
         is_generic = is_generic_assignee(norm_assignee)
 
-        # Check confirmation
-        confirmation_valid = False
-        if not is_generic and a.assignee_confirmed and a.confirmation_utterance_id:
-            conf_speaker = speaker_map.get(a.confirmation_utterance_id)
-            if conf_speaker:
-                norm_conf_speaker = normalize_person_name(conf_speaker, participants)
-                if norm_conf_speaker == norm_assignee:
-                    confirmation_valid = True
-
-        if not is_generic and a.assignee_confirmed and confirmation_valid:
-            # Passes all criteria -> Confirmed Task
+        if norm_assignee and not is_generic:
+            # Explicitly named responsible person -> Confirmed PublicTask.
+            # Explicit verbal acceptance is NOT required for task ownership.
             public_tasks.append(
                 PublicTask(
                     source_ref=a.item_id,
@@ -343,15 +469,18 @@ def map_to_public(
                     source="ai",
                     evidence=a.evidence,
                     needs_review=a.needs_review,
+                    external_dependency=ext_dep,
+                    collaborator=collab,
+                    reviewer=rev,
+                    escalation=escalation,
                 )
             )
         else:
-            # Downgrade to Unresolved (unconfirmed_task)
+            # Truly unassigned: no responsible person identified or generic placeholder (ai đó, chưa rõ, cả team)
             downgrade_count += 1
-            reason = "Chưa có người nhận trách nhiệm hoặc người nhận chưa xác nhận đồng ý."
+            reason = "Chưa có người nhận trách nhiệm cụ thể."
             logger.info(
-                f"[Mapper] Action item '{a.item_id}' ({a.task}) downgraded to unconfirmed_task "
-                f"(assignee={norm_assignee}, confirmed={a.assignee_confirmed}, conf_valid={confirmation_valid})"
+                f"[Mapper] Action item '{a.item_id}' ({a.task}) mapped to unconfirmed_task (assignee={norm_assignee})"
             )
             public_unresolved.append(
                 PublicUnresolvedItem(
@@ -368,7 +497,7 @@ def map_to_public(
             )
 
     if downgrade_count > 0:
-        logger.info(f"[Mapper Summary] Downgraded {downgrade_count} action item(s) to unconfirmed_task.")
+        logger.info(f"[Mapper Summary] Mapped {downgrade_count} unassigned item(s) to unconfirmed_task.")
 
     # ─────────────────────────────────────────────────────────────────────────
     # 4. Map Requests

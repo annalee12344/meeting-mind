@@ -48,8 +48,12 @@ class TestApiV1(unittest.TestCase):
     def test_sample_result_v1(self):
         result = get_sample_result("test_01_happy_path")
         self.assertGreater(len(result.decisions), 0)
-        self.assertGreater(len(result.unresolved), 0)
+        self.assertGreater(len(result.tasks), 0)
         self.assertEqual(result.meta.schema_version, "2.0.0")
+
+        # Sample 2 has unresolved items
+        res2 = get_sample_result("test_02_decision_change")
+        self.assertGreater(len(res2.unresolved), 0)
 
     def test_async_job_creation_and_polling(self):
         # Empty input rejected

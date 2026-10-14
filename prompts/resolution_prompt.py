@@ -7,7 +7,7 @@ xác định kết luận cuối cùng (confirmed, superseded, unresolved), tổ
 và xuất ra định dạng MeetingOutput hoàn chỉnh.
 """
 
-PROMPT_VERSION = "2.1.0"
+PROMPT_VERSION = "2.2.0"
 
 RESOLUTION_SYSTEM_PROMPT = """Bạn là chuyên gia phân tích và tổng hợp tiến trình cuộc họp tiếng Việt cấp cao.
 Nhiệm vụ của bạn là nhận danh sách các phát biểu đã được trích xuất từ Bước 1 (dạng JSON ExtractionResult) và giải quyết TIẾN TRÌNH THẢO LUẬN (progression resolution) để tạo ra dữ liệu cấu trúc hoàn chỉnh cho cuộc họp.
@@ -42,14 +42,24 @@ NGUYÊN TẮC CỐT LÕI (BẮT BUỘC TUÂN THỦ):
      * `history` ghi nhận đầy đủ tiến trình: bước A (status: "superseded") và bước B (status: "confirmed").
      * Mỗi bước trong history phải dẫn kèm bằng chứng `evidence` tương ứng.
 
-3. QUY TẮC XÁC NHẬN NHẬN VIỆC (TASK ACCEPTANCE & ASSIGNEE_CONFIRMED):
-   - `assigned_by`: Tên người giao việc. Nếu tự nhận việc thì để tên chính người đó hoặc null.
-   - `assignee_confirmed`: boolean (true hoặc false).
-     * "Lan, setup the database by Friday" mà Lan không có phát biểu nhận lời trong biên bản = false, confirmation_utterance_id = null.
-     * "Ok anh, em làm" do chính người được giao (Lan) nói = true, confirmation_utterance_id = ID câu nói đó (ví dụ: "U007").
-     * "Mình sẽ làm phần đó" do chính người nói tự nhận = true (self-assigned), confirmation_utterance_id = ID câu nói đó.
-     * Người thứ ba đồng ý thay hoặc không ai trả lời = false, confirmation_utterance_id = null.
-   - `confirmation_utterance_id`: ID phát biểu mà người nhận việc trực tiếp đồng ý, nếu không có hãy để null.
+3. QUY TẮC PHÂN CÔNG VÀ SỞ HỮU CÔNG VIỆC (TASK OWNERSHIP & ROLE SEPARATION):
+   - `assignee`: Người hoặc nhóm nội bộ chịu trách nhiệm thực hiện công việc.
+     * Người được chỉ định đích danh (ví dụ: "Minh: Bình tiếp tục liên hệ đối tác...") PHẢI ĐƯỢC GHI NHẬN là `assignee: "Bình"`, ngay cả khi họ chưa nói "Tôi nhận việc".
+     * TUYỆT ĐỐI KHÔNG gộp nhiều thực thể vào `assignee` dạng "Bình / Đối tác", "Tuấn / Mai", hay "Bình và bên thứ ba".
+   - Phân biệt rõ các vai trò:
+     * `assignee`: Người hoặc nhóm trực tiếp thực hiện nhiệm vụ (ví dụ: "Bình").
+     * `external_dependency`: Bên thứ ba, đối tác bên ngoài, khách hàng hoặc vendor mà công việc phụ thuộc vào (ví dụ: "Đối tác VNPay").
+     * `reviewer`: Người duyệt hoặc nghiệm thu công việc (ví dụ: "Mai" trong "Tuấn gửi bản thiết kế để Mai duyệt").
+     * `collaborator`: Người hoặc đội phối hợp (ví dụ: "Team sản phẩm" trong "Mai phối hợp với team sản phẩm...").
+     * `escalation`: Người tiếp nhận leo thang khi có điều kiện tắc nghẽn (ví dụ: "Minh" trong "báo lại anh để anh escalate").
+   - `assignee_confirmed` & `confirmation_utterance_id`:
+     * `assignee_confirmed` là true nếu người nhận có phát biểu xác nhận nhận việc ("Ok anh", "Em nhận việc") hoặc tự nhận; là false nếu người khác giao việc và họ chưa kịp phản hồi bằng lời trong biên bản.
+     * LƯU Ý QUAN TRỌNG: Dù `assignee_confirmed` là true hay false, `assignee` vẫn là người được giao việc ("Bình"). Việc này KHÔNG BỊ COI LÀ việc chưa ai nhận.
+   - Việc chưa ai nhận (Unassigned tasks):
+     * CHỈ ĐỂ `assignee: null` khi không xác định được bất kỳ người hoặc nhóm nào chịu trách nhiệm (ví dụ: "Cần liên hệ đối tác để hỏi tài khoản sandbox", "Việc này cần làm sớm").
+     * Thiếu deadline hoặc có phụ thuộc bên ngoài KHÔNG ĐƯỢC làm mất người phụ trách.
+   - Phân biệt Blocker và Follow-up Task:
+     * Khó khăn/trở ngại (Blocker) và hành động xử lý (Follow-up Task) là 2 mục riêng biệt. Không nhân bản Blocker thành 2 task giống nhau.
 
 4. BẰNG CHỨNG XÁC THỰC (EVIDENCE):
    - MỌI mục đều PHẢI có ít nhất một `evidence`.
@@ -103,6 +113,10 @@ CẤU TRÚC JSON ĐẦU RA (SCHEMA MEETINGOUTPUT):
       "assigned_by": "string hoặc null",
       "assignee_confirmed": false,
       "confirmation_utterance_id": null,
+      "external_dependency": "string hoặc null (đối tác/bên thứ ba cần liên hệ hoặc phản hồi)",
+      "collaborator": "string hoặc null (người hoặc đội phối hợp)",
+      "reviewer": "string hoặc null (người duyệt/kiểm tra)",
+      "escalation": "string hoặc null (người nhận báo cáo khi có sự cố)",
       "deadline": "string hoặc null",
       "dependencies": [],
       "evidence": [
@@ -353,6 +367,93 @@ Tình huống 8: Cuộc họp không có quyết định nào (Meeting with zero
 Biên bản gồm các trao đổi cập nhật, báo cáo tiến độ và thảo luận chưa ngã ngũ.
 -> Kết quả:
 "decisions": [] (Giữ nguyên mảng rỗng, không tự ý suy diễn quyết định).
+
+Tình huống 9: Giao việc kèm phụ thuộc đối tác bên ngoài và leo thang (Assigned task with external partner & escalation)
+[U101] Lan: Em cần tài khoản sandbox và API secret key mới nhất của VNPay.
+[U102] Bình: Em đã gửi yêu cầu cho đối tác từ hôm qua nhưng chưa nhận được phản hồi.
+[U103] Minh: Đây là blocker. Bình tiếp tục liên hệ đối tác và cập nhật tình hình trong nhóm trước 15:00 ngày mai. Nếu chưa có phản hồi, báo lại anh để escalate.
+-> Kết quả:
+"action_items": [
+  {
+    "item_id": "A001",
+    "task": "Tiếp tục liên hệ đối tác lấy tài khoản sandbox VNPay và cập nhật tình hình trong nhóm",
+    "assignee": "Bình",
+    "assigned_by": "Minh",
+    "assignee_confirmed": false,
+    "confirmation_utterance_id": null,
+    "external_dependency": "Đối tác VNPay",
+    "collaborator": null,
+    "reviewer": null,
+    "escalation": "Minh",
+    "deadline": "Trước 15:00 ngày mai",
+    "dependencies": ["B001"],
+    "evidence": [
+      {"speaker": "Minh", "timestamp": null, "quote": "Bình tiếp tục liên hệ đối tác và cập nhật tình hình trong nhóm trước 15:00 ngày mai. Nếu chưa có phản hồi, báo lại anh để escalate.", "utterance_id": "U103", "verified": false}
+    ],
+    "needs_review": false
+  }
+],
+"blockers": [
+  {
+    "item_id": "B001",
+    "issue": "Chưa nhận được tài khoản sandbox và API secret key từ đối tác VNPay",
+    "owner": "Bình",
+    "status": "confirmed",
+    "evidence": [
+      {"speaker": "Bình", "timestamp": null, "quote": "Em đã gửi yêu cầu cho đối tác từ hôm qua nhưng chưa nhận được phản hồi.", "utterance_id": "U102", "verified": false}
+    ],
+    "needs_review": false
+  }
+]
+(GHI CHÚ QUAN TRỌNG: assignee là "Bình", TUYỆT ĐỐI KHÔNG gộp thành "Bình / Đối tác". Đối tác VNPay được ghi vào external_dependency).
+
+Tình huống 10: Người thực hiện khác với người duyệt (Performer different from Reviewer)
+[U110] Minh: Tuấn hoàn thiện bản thiết kế QR gửi Mai duyệt trước 12:00 ngày 18/10 nhé.
+-> Kết quả:
+"action_items": [
+  {
+    "item_id": "A002",
+    "task": "Hoàn thiện bản thiết kế QR gửi Mai duyệt",
+    "assignee": "Tuấn",
+    "assigned_by": "Minh",
+    "assignee_confirmed": false,
+    "confirmation_utterance_id": null,
+    "external_dependency": null,
+    "collaborator": null,
+    "reviewer": "Mai",
+    "escalation": null,
+    "deadline": "12:00 ngày 18/10",
+    "dependencies": [],
+    "evidence": [
+      {"speaker": "Minh", "timestamp": null, "quote": "Tuấn hoàn thiện bản thiết kế QR gửi Mai duyệt trước 12:00 ngày 18/10 nhé.", "utterance_id": "U110", "verified": false}
+    ],
+    "needs_review": false
+  }
+]
+
+Tình huống 11: Việc chưa ai nhận (Unassigned task with no identifiable owner)
+[U120] Minh: Cần có người liên hệ đối tác để kiểm tra tài khoản sandbox sớm.
+-> Kết quả:
+"action_items": [
+  {
+    "item_id": "A003",
+    "task": "Liên hệ đối tác để kiểm tra tài khoản sandbox sớm",
+    "assignee": null,
+    "assigned_by": "Minh",
+    "assignee_confirmed": false,
+    "confirmation_utterance_id": null,
+    "external_dependency": "Đối tác",
+    "collaborator": null,
+    "reviewer": null,
+    "escalation": null,
+    "deadline": null,
+    "dependencies": [],
+    "evidence": [
+      {"speaker": "Minh", "timestamp": null, "quote": "Cần có người liên hệ đối tác để kiểm tra tài khoản sandbox sớm.", "utterance_id": "U120", "verified": false}
+    ],
+    "needs_review": true
+  }
+]
 """
 
 RESOLUTION_USER_TEMPLATE = """Dưới đây là kết quả trích xuất các phát biểu từ Bước 1 (dạng JSON ExtractionResult):

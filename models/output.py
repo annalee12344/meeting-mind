@@ -144,6 +144,23 @@ class ActionItem(BaseModel):
         default=None,
         description="Speaker who assigned the task, if different from assignee",
     )
+    # Role distinction fields (Section 2)
+    external_dependency: Optional[str] = Field(
+        default=None,
+        description="External partner, vendor, or third-party entity that must provide something or respond",
+    )
+    collaborator: Optional[str] = Field(
+        default=None,
+        description="Collaborator or assisting team helping with the task",
+    )
+    reviewer: Optional[str] = Field(
+        default=None,
+        description="Reviewer or approver for the task outcome",
+    )
+    escalation: Optional[str] = Field(
+        default=None,
+        description="Person or role to escalate to if a condition occurs",
+    )
 
 
 class Blocker(BaseModel):
@@ -265,6 +282,23 @@ class PublicTask(BaseModel):
     )
     evidence: list[Evidence] = Field(default_factory=list)
     needs_review: bool = False
+    # Role distinction fields (Section 2)
+    external_dependency: Optional[str] = Field(
+        default=None,
+        description="External partner, vendor, or third-party entity that must provide something or respond",
+    )
+    collaborator: Optional[str] = Field(
+        default=None,
+        description="Collaborator or assisting team helping with the task",
+    )
+    reviewer: Optional[str] = Field(
+        default=None,
+        description="Reviewer or approver for the task outcome",
+    )
+    escalation: Optional[str] = Field(
+        default=None,
+        description="Person or role to escalate to if a condition occurs",
+    )
 
 
 class PublicUnresolvedItem(BaseModel):
@@ -300,7 +334,7 @@ class PublicIssue(BaseModel):
 class PublicMeta(BaseModel):
     """Metadata describing the analysis execution, schema version, and date resolution."""
     schema_version: str = "2.0.0"
-    prompt_version: str = "2.0.0"
+    prompt_version: str = "2.2.0"
     per_step_model: dict[str, str] = Field(default_factory=dict)
     analyzed_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     transcript_hash: str = ""
