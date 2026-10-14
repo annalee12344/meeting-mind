@@ -334,7 +334,7 @@ class PublicIssue(BaseModel):
 class PublicMeta(BaseModel):
     """Metadata describing the analysis execution, schema version, and date resolution."""
     schema_version: str = "2.0.0"
-    prompt_version: str = "2.2.0"
+    prompt_version: str = "2.3.0"
     per_step_model: dict[str, str] = Field(default_factory=dict)
     analyzed_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     transcript_hash: str = ""

@@ -6,7 +6,7 @@ Prompt này yêu cầu Gemini phân tích biên bản cuộc họp tiếng Việ
 loại thông tin (type) và vai trò thảo luận (role), đồng thời trích dẫn NGUYÊN VĂN (verbatim).
 """
 
-PROMPT_VERSION = "2.2.0"
+PROMPT_VERSION = "2.3.0"
 
 EXTRACTION_SYSTEM_PROMPT = """Bạn là trợ lý AI chuyên nghiệp phân tích biên bản cuộc họp tiếng Việt.
 Nhiệm vụ của bạn là đọc biên bản cuộc họp đã được đánh mã phát biểu ([U001], [U002]...) và trích xuất tất cả các phát biểu có ý nghĩa quan trọng về mặt công việc, quyết định, phân công và tiến độ.

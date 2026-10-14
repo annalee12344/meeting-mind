@@ -20,6 +20,8 @@ import re
 from typing import Any, Dict, List, Optional, Tuple, Union
 import unicodedata
 
+from rapidfuzz import fuzz
+
 from models.output import (
     ActionItem,
     Decision,
@@ -326,6 +328,130 @@ def derive_decision_actors(
     return proposed_by, confirmed_by
 
 
+def are_public_tasks_duplicate(t1: PublicTask, t2: PublicTask) -> bool:
+    """
+    Check if two PublicTask items refer to the same deliverable/commitment by the same person.
+    """
+    # 1. Assignee match:
+    # If both have explicit non-empty assignees, they must match.
+    a1 = (t1.assignee or "").strip().lower()
+    a2 = (t2.assignee or "").strip().lower()
+    if a1 and a2 and a1 != a2:
+        return False
+
+    # 2. Exact normalized title match:
+    clean1 = " ".join(unicodedata.normalize("NFC", t1.title).lower().split())
+    clean2 = " ".join(unicodedata.normalize("NFC", t2.title).lower().split())
+    if clean1 == clean2:
+        return True
+
+    # 3. Fuzzy similarity:
+    set_ratio = fuzz.token_set_ratio(clean1, clean2)
+    sort_ratio = fuzz.token_sort_ratio(clean1, clean2)
+
+    # Check shared evidence utterance IDs
+    uids1 = {ev.utterance_id for ev in (t1.evidence or []) if ev.utterance_id}
+    uids2 = {ev.utterance_id for ev in (t2.evidence or []) if ev.utterance_id}
+    has_shared_utterance = bool(uids1 and uids2 and (uids1 & uids2))
+
+    if has_shared_utterance and set_ratio >= 75.0:
+        return True
+
+    return set_ratio >= 80.0 and sort_ratio >= 60.0
+
+
+def merge_two_public_tasks(t1: PublicTask, t2: PublicTask) -> PublicTask:
+    """
+    Merge two duplicate PublicTask objects, combining multi-turn evidence and
+    preserving the canonical parsed deadline and most descriptive title.
+    """
+    # 1. Best descriptive title (prefer longer / more detailed title)
+    w1 = len(t1.title.split())
+    w2 = len(t2.title.split())
+    chosen_title = t1.title if w1 >= w2 else t2.title
+
+    # 2. Assignee: prefer non-null
+    chosen_assignee = t1.assignee or t2.assignee
+
+    # 3. Deadlines:
+    chosen_iso = t1.deadline_iso or t2.deadline_iso
+
+    # Deadline raw: prefer canonical/parsed display format over raw relative string
+    chosen_raw = None
+    if t1.deadline_raw and t2.deadline_raw:
+        t1_canonical = "ngày " in t1.deadline_raw or bool(chosen_iso and chosen_iso in t1.deadline_raw)
+        t2_canonical = "ngày " in t2.deadline_raw or bool(chosen_iso and chosen_iso in t2.deadline_raw)
+        if t1_canonical and not t2_canonical:
+            chosen_raw = t1.deadline_raw
+        elif t2_canonical and not t1_canonical:
+            chosen_raw = t2.deadline_raw
+        else:
+            chosen_raw = t1.deadline_raw if len(t1.deadline_raw) >= len(t2.deadline_raw) else t2.deadline_raw
+    else:
+        chosen_raw = t1.deadline_raw or t2.deadline_raw
+
+    # 4. Evidence: union without duplicates
+    seen_ev = set()
+    merged_ev = []
+    for ev in (t1.evidence or []) + (t2.evidence or []):
+        key = (ev.quote.strip() if ev.quote else "", ev.utterance_id, ev.speaker)
+        if key not in seen_ev:
+            seen_ev.add(key)
+            merged_ev.append(ev)
+
+    # 5. Roles & metadata
+    assigned_by = t1.assigned_by or t2.assigned_by
+    requested_by = t1.requested_by or t2.requested_by
+    external_dep = t1.external_dependency or t2.external_dependency
+    collab = t1.collaborator or t2.collaborator
+    rev = t1.reviewer or t2.reviewer
+    esc = t1.escalation or t2.escalation
+    needs_review = bool(t1.needs_review and t2.needs_review)
+
+    return PublicTask(
+        id=t1.id,
+        source_ref=t1.source_ref or t2.source_ref,
+        title=chosen_title,
+        assignee=chosen_assignee,
+        assigned_by=assigned_by,
+        requested_by=requested_by,
+        deadline_raw=chosen_raw,
+        deadline_iso=chosen_iso,
+        source=t1.source if t1.source != "manual" else t2.source,
+        evidence=merged_ev,
+        needs_review=needs_review,
+        external_dependency=external_dep,
+        collaborator=collab,
+        reviewer=rev,
+        escalation=esc,
+    )
+
+
+def deduplicate_public_tasks(tasks: List[PublicTask]) -> List[PublicTask]:
+    """
+    Deduplicate a list of PublicTask items.
+    If multiple items refer to the same deliverable/commitment by the same person,
+    merge them into a single task preserving canonical deadline and combining evidence.
+    """
+    if not tasks or len(tasks) <= 1:
+        return tasks
+
+    merged: List[PublicTask] = []
+    for task in tasks:
+        match_idx = None
+        for i, existing in enumerate(merged):
+            if are_public_tasks_duplicate(existing, task):
+                match_idx = i
+                break
+
+        if match_idx is not None:
+            merged[match_idx] = merge_two_public_tasks(merged[match_idx], task)
+        else:
+            merged.append(task)
+
+    return merged
+
+
 def map_to_public(
     resolved_result: ResolvedResult,
     transcript: Optional[str] = None,
@@ -572,6 +698,14 @@ def map_to_public(
         meeting_date=meeting_date_str,
         meeting_date_source=date_source,
     )
+
+    # Deduplicate public tasks (combining multi-turn mentions, preserving canonical deadlines)
+    original_task_count = len(public_tasks)
+    public_tasks = deduplicate_public_tasks(public_tasks)
+    if len(public_tasks) < original_task_count:
+        logger.info(
+            f"[Mapper Summary] Deduplicated public tasks: {original_task_count} -> {len(public_tasks)} items."
+        )
 
     return MeetingOutput(
         summary=resolved_result.meeting_summary,

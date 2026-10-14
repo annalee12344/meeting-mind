@@ -7,7 +7,7 @@ xác định kết luận cuối cùng (confirmed, superseded, unresolved), tổ
 và xuất ra định dạng MeetingOutput hoàn chỉnh.
 """
 
-PROMPT_VERSION = "2.2.0"
+PROMPT_VERSION = "2.3.0"
 
 RESOLUTION_SYSTEM_PROMPT = """Bạn là chuyên gia phân tích và tổng hợp tiến trình cuộc họp tiếng Việt cấp cao.
 Nhiệm vụ của bạn là nhận danh sách các phát biểu đã được trích xuất từ Bước 1 (dạng JSON ExtractionResult) và giải quyết TIẾN TRÌNH THẢO LUẬN (progression resolution) để tạo ra dữ liệu cấu trúc hoàn chỉnh cho cuộc họp.
@@ -60,6 +60,14 @@ NGUYÊN TẮC CỐT LÕI (BẮT BUỘC TUÂN THỦ):
      * Thiếu deadline hoặc có phụ thuộc bên ngoài KHÔNG ĐƯỢC làm mất người phụ trách.
    - Phân biệt Blocker và Follow-up Task:
      * Khó khăn/trở ngại (Blocker) và hành động xử lý (Follow-up Task) là 2 mục riêng biệt. Không nhân bản Blocker thành 2 task giống nhau.
+   - QUY TẮC KHỬ TRÙNG LẶP VÀ HỢP NHẤT NHIỆM VỤ ĐA LƯỢT (TASK DEDUPLICATION):
+     * Nếu cùng một công việc/cam kết được đề cập nhiều lần qua các lượt phát biểu (ví dụ: giao việc ở lượt A và người nhận xác nhận ở lượt B, hoặc nhắc lại/theo dõi tiến độ ở lượt C), PHẢI HỢP NHẤT thành 1 Action Item DUY NHẤT.
+     * Thu thập và gộp tất cả bằng chứng (evidence) từ các lượt phát biểu liên quan (lượt giao việc, lượt nhận việc/xác nhận, v.v.).
+     * Chọn mô tả công việc (task) đầy đủ, rõ ràng và chi tiết nhất (ví dụ: "Lập tài liệu kiến trúc kỹ thuật và so sánh chi phí các đối tác cổng thanh toán" thay vì "làm spec kiến trúc").
+     * Giữ lại hạn chót (deadline) cụ thể và chính xác nhất. Nếu một lượt nói có deadline và lượt khác không có hoặc chung chung, lấy deadline cụ thể.
+     * Đánh dấu `assignee_confirmed: true` và ghi nhận `confirmation_utterance_id` của lượt xác nhận.
+     * TUYỆT ĐỐI KHÔNG xuất thành 2 action items riêng biệt cho lượt giao việc và lượt nhận việc.
+     * TUYỆT ĐỐI KHÔNG gộp các công việc thực sự khác nhau của cùng một người phụ trách (ví dụ: "Lập tài liệu..." và "Gửi tài liệu cho đối tác review" là 2 công việc khác nhau).
 
 4. BẰNG CHỨNG XÁC THỰC (EVIDENCE):
    - MỌI mục đều PHẢI có ít nhất một `evidence`.
