@@ -1,0 +1,24 @@
+[09:00] Phong: Chào mọi người, cuộc họp ngày 21/10/2026 này để thống nhất giải pháp UI library cho cổng quản trị nội bộ của công ty.
+[09:02] Vy: Em xin trình bày phương án dùng Tailwind UI components kết hợp với Next.js App Router cho cổng quản trị mới.
+[09:04] An: Em thấy phương án dùng Tailwind UI với Next.js rất khả thi, dev dựng trang sẽ nhanh hơn nhiều so với tự viết CSS.
+[09:06] Bình: Về phía QA thì Tailwind components đã được chuẩn hóa khả năng truy cập nên test UI sẽ ổn định hơn.
+[09:08] Phong: Chi phí bản quyền component pack của Tailwind UI có nằm trong ngân sách quý này không Vy?
+[09:10] Vy: Gói team license chỉ khoảng 299 đô, team mình đã được duyệt ngân sách công cụ từ đầu tháng rồi anh.
+[09:12] An: Nếu dùng Tailwind UI thì team frontend cam kết rút ngắn thời gian làm giao diện khoảng 30%.
+[09:14] Bình: Bên em cũng dễ dàng viết automation test với selector chuẩn từ Tailwind.
+[09:16] Phong: Nếu cả team đều thấy hợp lý thì chúng ta thống nhất dùng Tailwind UI kết hợp Next.js cho cổng quản trị nội bộ.
+[09:18] An: Vâng, phương án này rất ok.
+[09:19] Vy: Em hoàn toàn nhất trí.
+[09:20] Bình: Được anh, triển khai theo hướng này đi.
+[09:22] Phong: Tốt lắm, chúng ta bắt tay vào việc ngay. An khởi tạo repository và cấu hình base layout với Next.js nhé. Hạn chót 17:00 ngày 24/10.
+[09:24] An: Vâng anh, em nhận việc setup repo và layout trước 17:00 ngày 24/10.
+[09:26] Phong: Vy phụ trách xuất bảng màu thương hiệu và typography tokens lên Figma. Hạn hoàn thành là 12:00 ngày 23/10.
+[09:28] Vy: Em nhận task xuất design tokens trước 12:00 ngày 23/10.
+[09:30] Bình: Em sẽ chuẩn bị kịch bản kiểm thử giao diện cho các màn hình phân quyền. Hạn chót cho em là 17:00 ngày 25/10 đúng không anh?
+[09:32] Phong: Đúng rồi Bình, Bình hoàn thành kịch bản test trước 17:00 ngày 25/10 nhé.
+[09:34] An: Hiện tại tài khoản npm tổ chức công ty chưa được cấp quyền tải gói thư viện riêng, em cần DevOps hỗ trợ invite vào organization.
+[09:36] Phong: Anh ghi nhận vấn đề quyền truy cập npm của An. Anh sẽ ping admin IT cấp quyền ngay đầu giờ chiều nay.
+[09:38] Vy: Còn phần tích hợp biểu đồ doanh thu thì mình dùng thư viện nào vậy anh Phong?
+[09:40] Phong: Vấn đề chọn thư viện biểu đồ Recharts hay ChartJS chúng ta sẽ bàn ở sprint sau nhé, hôm nay chưa vội.
+[09:42] Bình: Vâng, vậy phần chart để tuần sau tính tiếp.
+[09:44] Phong: Cảm ơn cả team, buổi họp hôm nay kết thúc tại đây.

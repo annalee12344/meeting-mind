@@ -1,0 +1,23 @@
+[14:00] Sơn: Chào cả team, cuộc họp ngày 23/10/2026 này nhằm rà soát các phản hồi gần đây của khách hàng về hệ thống thông báo đẩy và giao việc tuần này.
+[14:02] Thảo: Khách hàng phàn nàn rất nhiều về việc nhận quá nhiều thông báo lẻ tẻ trong ngày gây phiền toái.
+[14:04] Quang: Em có đề xuất là mình đổi cơ chế thông báo sang dạng gom theo khung giờ, ví dụ cứ 3 tiếng mới tổng hợp gửi một lần.
+[14:06] Hạnh: Nhưng nếu gom 3 tiếng thì những thông báo khẩn cấp như biến động số dư hoặc cảnh báo bảo mật người dùng sẽ nhận trễ.
+[14:08] Thảo: Em cũng lo ngại tỷ lệ mở app sẽ giảm nếu gom thông báo lại như vậy.
+[14:10] Sơn: Ý kiến gom thông báo của Quang đáng cân nhắc, nhưng hiện tại chúng ta chưa có đủ dữ liệu khảo sát hành vi người dùng.
+[14:12] Sơn: Vì vậy vấn đề đổi cơ chế thông báo tạm thời để ngỏ, chưa chọn phương án nào cả. Tuần sau làm khảo sát thêm rồi mới tính tiếp.
+[14:14] Thảo: Vâng, em đồng ý là chưa quyết định vội lúc này, cần nghiên cứu thêm.
+[14:16] Quang: Đúng vậy, chờ có số liệu survey cụ thể rồi hãy đưa ra giải pháp kỹ thuật.
+[14:18] Hạnh: Em nhất trí chưa vội thay đổi hệ thống thông báo hiện tại.
+[14:20] Sơn: Bây giờ chúng ta phân chia các công việc cần làm cho tuần này.
+[14:22] Sơn: Thảo soạn thảo bảng khảo sát người dùng về tần suất nhận thông báo nhé. Hạn chót nộp bản thảo là 17:00 ngày 25/10.
+[14:24] Thảo: Vâng anh Sơn, em nhận task làm bảng khảo sát và gửi team review trước 17:00 ngày 25/10.
+[14:26] Sơn: Quang kiểm tra lại log hệ thống push notification để thống kê tần suất gửi tin nhắn trung bình mỗi ngày. Hạn là 12:00 ngày 26/10.
+[14:28] Quang: Em nhận task trích xuất thống kê log push notification, hạn trước 12:00 ngày 26/10.
+[14:30] Hạnh: Bên chăm sóc khách hàng cần cập nhật tài liệu giải đáp thắc mắc (FAQ) về cách tắt bớt thông báo trong ứng dụng. Em sẽ hoàn thành trước 17:00 ngày 27/10.
+[14:32] Sơn: Tốt lắm Hạnh, Hạnh phụ trách cập nhật FAQ trước 17:00 ngày 27/10 nhé.
+[14:34] Quang: Em muốn báo cáo thêm là dịch vụ Firebase Messaging thỉnh thoảng trả về mã lỗi 503 khi gửi broadcast.
+[14:36] Sơn: Quang tạo một issue trên Jira để theo dõi lỗi Firebase 503 này nhé.
+[14:38] Quang: Vâng, em sẽ tạo issue Jira ngay sau cuộc họp.
+[14:40] Sơn: Còn đề xuất bổ sung kênh thông báo qua Zalo ZNS thì sao mọi người?
+[14:42] Thảo: Chi phí tin nhắn ZNS khá đắt nên team cần xin thêm ngân sách từ ban giám đốc, chưa thể chốt gì bây giờ.
+[14:44] Sơn: Đồng ý, vấn đề ZNS tiếp tục hoãn lại. Cảm ơn cả team, buổi họp kết thúc.
