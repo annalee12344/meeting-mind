@@ -27,8 +27,16 @@ from models.jobs import (
 from models.output import MeetingOutput
 from pipeline.deadlines import resolve_meeting_date
 from pipeline.extractor import Extractor
+from pipeline.llm_client import (
+    LLMAuthError,
+    LLMInvalidOutputError,
+    LLMRateLimitError,
+    LLMSafetyError,
+    LLMTimeoutError,
+    LLMValidationError,
+)
 from pipeline.mapper import map_to_public
-from pipeline.preprocessor import preprocess
+from pipeline.preprocessor import PreprocessError, preprocess
 from pipeline.resolver import Resolver
 from pipeline.validator import Validator
 
@@ -56,6 +64,8 @@ class JobStore(Protocol):
         status: Optional[JobStatus] = None,
         progress: Optional[float] = None,
         message: Optional[str] = None,
+        stage_label: Optional[str] = None,
+        error_code: Optional[str] = None,
         error: Optional[str] = None,
         friendly_error: Optional[str] = None,
         result: Optional[MeetingOutput] = None,
@@ -98,18 +108,22 @@ class InMemoryJobStore:
 
     def create_job(self, job_id: str, meeting_title: str, transcript_length: int) -> AnalysisJob:
         with self._lock:
+            prog = STAGE_PROGRESS_MAP[JobStage.QUEUED]
+            label = STAGE_LABELS_VI[JobStage.QUEUED]
             job = AnalysisJob(
                 job_id=job_id,
                 meeting_title=meeting_title,
                 transcript_length=transcript_length,
                 status=JobStatus.PENDING,
                 stage=JobStage.QUEUED,
-                progress=STAGE_PROGRESS_MAP[JobStage.QUEUED],
-                stage_message=STAGE_LABELS_VI[JobStage.QUEUED],
+                progress=prog,
+                progress_percent=int(round(prog * 100)),
+                stage_message=label,
+                stage_label=label,
             )
             self._jobs[job_id] = job
             self._created_timestamps[job_id] = time.time()
-            logger.info(f"[JobStore] Created job '{job_id}' for '{meeting_title}'")
+            logger.info(f"[JobStore] Created job '{job_id}' for '{meeting_title}' (chars={transcript_length})")
             return job
 
     def get_job(self, job_id: str) -> Optional[AnalysisJob]:
@@ -140,6 +154,8 @@ class InMemoryJobStore:
         status: Optional[JobStatus] = None,
         progress: Optional[float] = None,
         message: Optional[str] = None,
+        stage_label: Optional[str] = None,
+        error_code: Optional[str] = None,
         error: Optional[str] = None,
         friendly_error: Optional[str] = None,
         result: Optional[MeetingOutput] = None,
@@ -162,13 +178,19 @@ class InMemoryJobStore:
                 job.status = JobStatus.PROCESSING
 
             job.progress = progress if progress is not None else STAGE_PROGRESS_MAP.get(stage, job.progress)
-            job.stage_message = message or STAGE_LABELS_VI.get(stage, job.stage_message)
+            job.progress_percent = int(round(job.progress * 100))
 
-            if error:
+            lbl = stage_label or message or STAGE_LABELS_VI.get(stage, job.stage_message)
+            job.stage_message = lbl
+            job.stage_label = lbl
+
+            if error_code is not None:
+                job.error_code = error_code
+            if error is not None:
                 job.error = error
-            if friendly_error:
+            if friendly_error is not None:
                 job.friendly_error = friendly_error
-            if result:
+            if result is not None:
                 job.result = result
 
             job.updated_at = datetime.now(timezone.utc).isoformat()
@@ -184,7 +206,10 @@ class InMemoryJobStore:
             job.status = JobStatus.CANCELLED
             job.stage = JobStage.CANCELLED
             job.progress = 1.0
-            job.stage_message = STAGE_LABELS_VI[JobStage.CANCELLED]
+            job.progress_percent = 100
+            label = STAGE_LABELS_VI[JobStage.CANCELLED]
+            job.stage_message = label
+            job.stage_label = label
             job.updated_at = datetime.now(timezone.utc).isoformat()
             logger.info(f"[JobStore] Cancelled job '{job_id}'")
             return True
@@ -246,14 +271,24 @@ def execute_pipeline_job(
 ) -> None:
     """
     Execute pipeline steps asynchronously in background thread, updating JobStore on each step.
+    Monitors overall timeout (PIPELINE_TIMEOUT_SECONDS) and logs stage durations and counts.
+    Never logs raw transcript content.
     """
     job_store = store or get_job_store()
+    job_start_time = time.time()
 
     def check_cancel() -> bool:
         if job_store.is_cancelled(job_id):
             logger.info(f"[PipelineJob] Job '{job_id}' aborting due to user cancellation.")
             return True
         return False
+
+    def check_timeout() -> None:
+        elapsed = time.time() - job_start_time
+        if elapsed > config.PIPELINE_TIMEOUT_SECONDS:
+            raise TimeoutError(
+                f"Quá thời gian thực thi tác vụ: {elapsed:.1f}s > {config.PIPELINE_TIMEOUT_SECONDS}s"
+            )
 
     try:
         clean_text = transcript.strip()
@@ -262,6 +297,7 @@ def execute_pipeline_job(
                 job_id,
                 stage=JobStage.FAILED,
                 status=JobStatus.FAILED,
+                error_code="empty_transcript",
                 friendly_error="Nội dung biên bản cuộc họp trống.",
             )
             return
@@ -294,40 +330,80 @@ def execute_pipeline_job(
                 return
 
         # ── Step 0: Preprocessing ──
+        check_timeout()
         if check_cancel():
             return
+        t0 = time.time()
         job_store.update_job(job_id, stage=JobStage.PREPROCESSING)
-        preprocessed = preprocess(clean_text)
+        preprocessed = preprocess(clean_text, strict=True)
+        d0 = time.time() - t0
+        utterance_count = len(preprocessed.splitlines())
+        logger.info(
+            f"[PipelineJob] Job '{job_id}' Step 0 (Preprocessing) completed in {d0:.2f}s "
+            f"({utterance_count} utterances)"
+        )
 
         # ── Step 1: Extraction ──
+        check_timeout()
         if check_cancel():
             return
+        t1 = time.time()
         job_store.update_job(job_id, stage=JobStage.EXTRACTING)
         extractor = Extractor()
         extracted = extractor.extract(preprocessed)
+        d1 = time.time() - t1
+        extracted_count = len(extracted.items) if hasattr(extracted, "items") else 0
+        logger.info(
+            f"[PipelineJob] Job '{job_id}' Step 1 (Extraction) completed in {d1:.2f}s "
+            f"({extracted_count} raw items extracted)"
+        )
 
         # ── Step 2: Resolution ──
+        check_timeout()
         if check_cancel():
             return
+        t2 = time.time()
         job_store.update_job(job_id, stage=JobStage.RESOLVING)
         resolver = Resolver()
         resolved = resolver.resolve(extracted)
+        d2 = time.time() - t2
+        topic_count = len(resolved.topics) if hasattr(resolved, "topics") else 0
+        logger.info(
+            f"[PipelineJob] Job '{job_id}' Step 2 (Resolution) completed in {d2:.2f}s "
+            f"({topic_count} topics resolved)"
+        )
 
         # ── Step 3: Evidence Validation ──
+        check_timeout()
         if check_cancel():
             return
+        t3 = time.time()
         job_store.update_job(job_id, stage=JobStage.VALIDATING)
         validator = Validator(threshold=threshold)
         validated = validator.validate(resolved, clean_text)
+        d3 = time.time() - t3
+        logger.info(
+            f"[PipelineJob] Job '{job_id}' Step 3 (Validation) completed in {d3:.2f}s"
+        )
 
         # ── Step 4: Deterministic Mapping ──
+        check_timeout()
         if check_cancel():
             return
+        t4 = time.time()
         job_store.update_job(job_id, stage=JobStage.MAPPING)
         public_output = map_to_public(
             validated,
             transcript=clean_text,
             meeting_date_input=meeting_date,
+        )
+        d4 = time.time() - t4
+        total_duration = time.time() - job_start_time
+        logger.info(
+            f"[PipelineJob] Job '{job_id}' Step 4 (Mapping) completed in {d4:.2f}s. "
+            f"Total duration: {total_duration:.2f}s. Counts: decisions={len(public_output.decisions)}, "
+            f"tasks={len(public_output.tasks)}, unresolved={len(public_output.unresolved)}, "
+            f"issues={len(public_output.issues)}"
         )
 
         if check_cancel():
@@ -341,24 +417,40 @@ def execute_pipeline_job(
             progress=1.0,
             result=public_output,
         )
-        logger.info(f"[PipelineJob] Job '{job_id}' completed successfully.")
+        logger.info(f"[PipelineJob] Job '{job_id}' finished successfully.")
 
     except Exception as exc:
-        logger.exception(f"[PipelineJob] Job '{job_id}' failed:")
+        logger.exception(f"[PipelineJob] Job '{job_id}' failed with exception:")
         err_str = str(exc)
-        if "API_KEY" in err_str or "GEMINI_API_KEY" in err_str:
-            friendly = "Lỗi xác thực Google Gemini API. Vui lòng cấu hình GEMINI_API_KEY trong file .env."
-        elif "ResourceExhausted" in err_str or "429" in err_str:
+        err_lower = err_str.lower()
+
+        if isinstance(exc, LLMAuthError) or "api_key" in err_lower or "gemini_api_key" in err_lower:
+            error_code = "llm_auth"
+            friendly = "Lỗi xác thực Google Gemini API. Vui lòng cấu hình GEMINI_API_KEY hợp lệ trong file .env."
+        elif isinstance(exc, LLMRateLimitError) or "429" in err_str or "resourceexhausted" in err_lower:
+            error_code = "llm_rate_limit"
             friendly = "Gemini API đang bị giới hạn tần suất (Rate limit 429). Vui lòng thử lại sau vài giây."
-        elif "timeout" in err_str.lower() or "deadline" in err_str.lower():
-            friendly = "Quá thời gian chờ phản hồi từ Gemini API (Timeout). Vui lòng thử lại."
+        elif isinstance(exc, (LLMTimeoutError, TimeoutError)) or "timeout" in err_lower or "deadline" in err_lower:
+            error_code = "llm_timeout"
+            friendly = "Quá thời gian chờ phản hồi từ Gemini API hoặc xử lý cuộc họp (Timeout). Vui lòng thử lại."
+        elif isinstance(exc, LLMSafetyError) or "safety" in err_lower:
+            error_code = "llm_safety"
+            friendly = "Nội dung cuộc họp bị hệ thống an toàn Gemini lọc hoặc từ chối xử lý."
+        elif isinstance(exc, (LLMValidationError, LLMInvalidOutputError)):
+            error_code = "llm_invalid_output"
+            friendly = "Mô hình Gemini trả về cấu trúc dữ liệu không hợp lệ sau các lần thử lại."
+        elif isinstance(exc, PreprocessError):
+            error_code = "preprocess_failed"
+            friendly = f"Không thể xử lý định dạng biên bản: {exc}"
         else:
+            error_code = "internal_error"
             friendly = f"Quá trình phân tích gặp sự cố: {type(exc).__name__} ({exc})"
 
         job_store.update_job(
             job_id,
             stage=JobStage.FAILED,
             status=JobStatus.FAILED,
+            error_code=error_code,
             error=err_str,
             friendly_error=friendly,
         )

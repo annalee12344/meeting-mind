@@ -39,6 +39,7 @@ from models.overlay import ExportPackage, MeetingOverlay, MeetingViewModel
 from pipeline.cache import compute_analysis_cache_key, get_analysis_cache
 from pipeline.job_store import execute_pipeline_job, get_job_store
 from pipeline.mapper import map_to_public, upgrade_legacy_result
+from pipeline.preprocessor import PreprocessError, preprocess
 from pipeline.runner import run_pipeline
 from pipeline.validator import Validator
 from prompts import PROMPT_VERSION
@@ -61,6 +62,47 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+def verify_gemini_configuration() -> Dict[str, Any]:
+    """Startup verification of Gemini configuration and connectivity."""
+    key = config.GEMINI_API_KEY
+    is_set = bool(key and key.strip() and key != "your_api_key_here")
+    step1_model = config.STEP1_MODEL
+    step2_model = config.STEP2_MODEL
+
+    probe_ok = False
+    probe_error = None
+    if is_set:
+        try:
+            import google.generativeai as genai
+            genai.configure(api_key=key)
+            m = genai.GenerativeModel(step1_model)
+            res = m.generate_content("Ping", request_options={"timeout": 10.0})
+            if res.text:
+                probe_ok = True
+        except Exception as exc:
+            probe_error = f"{type(exc).__name__}: {exc}"
+            logger.warning(f"[StartupCheck] Gemini connectivity probe warning: {probe_error}")
+    else:
+        logger.warning("[StartupCheck] GEMINI_API_KEY is NOT configured or using default placeholder!")
+
+    return {
+        "configured": is_set,
+        "step1_model": step1_model,
+        "step2_model": step2_model,
+        "probe_ok": probe_ok,
+        "probe_error": probe_error,
+    }
+
+
+@app.on_event("startup")
+def startup_event():
+    check = verify_gemini_configuration()
+    logger.info(
+        f"[ServerStartup] Gemini verification: configured={check['configured']}, "
+        f"step1_model={check['step1_model']}, step2_model={check['step2_model']}, probe_ok={check['probe_ok']}"
+    )
+
 
 # Sample transcripts metadata catalog
 SAMPLE_CATALOG: List[Dict[str, Any]] = [
@@ -325,11 +367,20 @@ def start_analysis_job_v1(request: AnalyzeRequest) -> AnalyzeJobResponse:
             detail="Nội dung biên bản cuộc họp trống.",
         )
 
+    # Pre-validate transcript formatting and minimum content
+    try:
+        preprocess(clean_text, strict=True)
+    except PreprocessError as pe:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Biên bản cuộc họp không hợp lệ: {pe}",
+        )
+
     effective_title = request.meeting_title or request.meeting_name or "Untitled Meeting"
     job_id = f"job_{uuid4().hex[:12]}"
 
     job_store = get_job_store()
-    job_store.create_job(
+    created_job = job_store.create_job(
         job_id=job_id,
         meeting_title=effective_title,
         transcript_length=len(clean_text),
@@ -354,7 +405,11 @@ def start_analysis_job_v1(request: AnalyzeRequest) -> AnalyzeJobResponse:
 
     return AnalyzeJobResponse(
         job_id=job_id,
-        status=JobStatus.PENDING,
+        status=created_job.status,
+        stage=created_job.stage,
+        stage_label=created_job.stage_label,
+        progress_percent=created_job.progress_percent,
+        poll_url=f"/api/v1/jobs/{job_id}",
         message="Tác vụ phân tích đã được khởi tạo thành công.",
     )
 
@@ -378,7 +433,10 @@ def get_job_status(job_id: str) -> JobStatusResponse:
         status=job.status,
         stage=job.stage,
         progress=job.progress,
+        progress_percent=job.progress_percent,
         stage_message=job.stage_message,
+        stage_label=job.stage_label,
+        error_code=job.error_code,
         error=job.error,
         friendly_error=job.friendly_error,
         result=job.result,

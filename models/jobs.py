@@ -68,7 +68,10 @@ class AnalysisJob(BaseModel):
     status: JobStatus = JobStatus.PENDING
     stage: JobStage = JobStage.QUEUED
     progress: float = 0.05
+    progress_percent: int = 5
     stage_message: str = "Đang xếp hàng chờ xử lý..."
+    stage_label: str = "Đang xếp hàng chờ xử lý..."
+    error_code: Optional[str] = None
     error: Optional[str] = None
     friendly_error: Optional[str] = None
     result: Optional[MeetingOutput] = None
@@ -79,7 +82,11 @@ class AnalysisJob(BaseModel):
 class AnalyzeJobResponse(BaseModel):
     """Immediate response returned by POST /api/v1/analyze."""
     job_id: str
-    status: JobStatus
+    status: JobStatus = JobStatus.PENDING
+    stage: JobStage = JobStage.QUEUED
+    stage_label: str = "Đang xếp hàng chờ xử lý..."
+    progress_percent: int = 5
+    poll_url: Optional[str] = None
     message: str = "Tác vụ phân tích đã được khởi tạo."
 
 
@@ -89,7 +96,10 @@ class JobStatusResponse(BaseModel):
     status: JobStatus
     stage: JobStage
     progress: float
+    progress_percent: int = 5
     stage_message: str
+    stage_label: str
+    error_code: Optional[str] = None
     error: Optional[str] = None
     friendly_error: Optional[str] = None
     result: Optional[MeetingOutput] = None

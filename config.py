@@ -16,6 +16,8 @@ STEP2_MODEL: str = os.getenv("STEP2_MODEL", os.getenv("GEMINI_MODEL", "gemini-fl
 TEMPERATURE: float = float(os.getenv("TEMPERATURE", "0.1"))
 LLM_REQUEST_TIMEOUT: float = float(os.getenv("LLM_REQUEST_TIMEOUT", "60.0"))
 MAX_CONTEXT_CHARS: int = int(os.getenv("MAX_CONTEXT_CHARS", "400000"))
+PIPELINE_TIMEOUT_SECONDS: float = float(os.getenv("PIPELINE_TIMEOUT_SECONDS", "120.0"))
+DEBUG_PIPELINE: bool = os.getenv("DEBUG_PIPELINE", "false").lower() in ("true", "1", "yes")
 
 # ── Validation ───────────────────────────────────────
 FUZZY_MATCH_THRESHOLD: int = int(os.getenv("FUZZY_MATCH_THRESHOLD", "80"))

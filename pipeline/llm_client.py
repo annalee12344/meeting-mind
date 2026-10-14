@@ -3,13 +3,13 @@ LLM Client Interface, Safety Helpers, and Google Gemini Implementation.
 
 Features:
 1. LLMClient Protocol defining standard generation and structured extraction interface.
-2. Typed error hierarchy (LLMTimeoutError, LLMRateLimitError, LLMSafetyError, LLMContextLengthError).
+2. Typed error hierarchy (LLMTimeoutError, LLMRateLimitError, LLMSafetyError, LLMAuthError, LLMContextLengthError, LLMValidationError).
 3. Anti-prompt injection via dynamic cryptographically random nonces (<<<TRANSCRIPT_DATA_{nonce}>>>)
    and transcript sanitization.
 4. Early context length checks to prevent oversized payloads.
 5. Structured generation with automatic retry, exponential backoff with jitter,
-   and validation error feedback into subsequent attempts.
-6. Support for response_schema with graceful fallback to JSON mime-type.
+   fail-fast on non-retryable errors (auth, safety, invalid model), and validation error feedback.
+6. Reliable JSON-mode structured output compatible with Pydantic v2 schemas.
 """
 from abc import abstractmethod
 import json
@@ -39,6 +39,11 @@ class LLMError(Exception):
     pass
 
 
+class LLMAuthError(LLMError):
+    """Raised when LLM API authentication fails (invalid API key, unauthorized, permission denied)."""
+    pass
+
+
 class LLMTimeoutError(LLMError):
     """Raised when an LLM API request times out."""
     pass
@@ -61,6 +66,11 @@ class LLMContextLengthError(LLMError):
 
 class LLMValidationError(LLMError):
     """Raised when LLM output repeatedly fails JSON or Pydantic validation."""
+    pass
+
+
+class LLMInvalidOutputError(LLMValidationError):
+    """Alias for output validation error."""
     pass
 
 
@@ -155,7 +165,7 @@ class LLMClient(Protocol):
         schema_cls: Type[T],
         system_instruction: Optional[str] = None,
         temperature: Optional[float] = None,
-        max_retries: int = 3,
+        max_retries: int = 2,
     ) -> T:
         """Generate and validate a structured Pydantic object with retry & feedback."""
         ...
@@ -180,7 +190,7 @@ class GeminiLLMClient:
     ) -> None:
         self.api_key = api_key or config.GEMINI_API_KEY
         if not self.api_key or self.api_key == "your_api_key_here":
-            raise ValueError(
+            raise LLMAuthError(
                 "GEMINI_API_KEY is not configured! Please set GEMINI_API_KEY in .env."
             )
 
@@ -195,17 +205,39 @@ class GeminiLLMClient:
 
     def _classify_and_raise_error(self, err: Exception) -> None:
         """Map SDK errors to typed LLM exceptions."""
+        if isinstance(err, LLMError):
+            raise err
+
         err_str = str(err).lower()
         err_type = type(err).__name__.lower()
 
+        # Auth errors
+        if (
+            "api_key" in err_str
+            or "api key" in err_str
+            or "401" in err_str
+            or "403" in err_str
+            or "permissiondenied" in err_type
+            or "permission_denied" in err_str
+            or "unauthenticated" in err_str
+        ):
+            raise LLMAuthError(f"Google Gemini authentication failed: {err}") from err
+
+        # Rate limit
         if "429" in err_str or "resourceexhausted" in err_type or "resource_exhausted" in err_str or "quota" in err_str:
             raise LLMRateLimitError(f"Rate limit exceeded (429): {err}") from err
 
+        # Timeout
         if "deadline" in err_type or "timeout" in err_type or "timed out" in err_str:
             raise LLMTimeoutError(f"Request timed out after {self.timeout}s: {err}") from err
 
+        # Safety
         if "safety" in err_str or "blocked" in err_str or "harm" in err_str:
             raise LLMSafetyError(f"Content blocked by safety filters: {err}") from err
+
+        # Invalid model or argument
+        if "not found" in err_str or "invalid argument" in err_str or "invalidargument" in err_type:
+            raise LLMError(f"Gemini API invalid model/argument: {err}") from err
 
         raise LLMError(f"Gemini API error ({type(err).__name__}): {err}") from err
 
@@ -247,38 +279,40 @@ class GeminiLLMClient:
         schema_cls: Type[T],
         system_instruction: Optional[str] = None,
         temperature: Optional[float] = None,
-        max_retries: int = 3,
+        max_retries: int = 2,
     ) -> T:
         """
         Generate structured output adhering to schema_cls.
         Implements:
-        1. response_schema config if supported (with fallback).
-        2. Exponential backoff with jitter on transient failures.
-        3. Feedback loop injecting validation error details on retry.
+        1. response_mime_type="application/json" mode without broken protobuf defaults.
+        2. Exponential backoff with jitter on transient failures (bounded to <= 20s).
+        3. Fail-fast on non-retryable errors (auth, safety, invalid model).
+        4. Feedback loop injecting validation error details on retry.
         """
         check_context_length(prompt)
 
         temp = temperature if temperature is not None else self.temperature
 
-        # Attempt to configure response_schema, fallback gracefully if unsupported
-        generation_config_args: Dict[str, Any] = {
-            "response_mime_type": "application/json",
-            "temperature": temp,
-        }
-        try:
-            # Some versions of google-generativeai support response_schema
-            generation_config_args["response_schema"] = schema_cls
-            gen_config = self.genai.GenerationConfig(**generation_config_args)
-        except Exception as schema_err:
-            logger.debug(f"Gemini response_schema configuration fallback: {schema_err}")
-            generation_config_args.pop("response_schema", None)
-            gen_config = self.genai.GenerationConfig(**generation_config_args)
-
-        model = self.genai.GenerativeModel(
-            model_name=self.model_name,
-            system_instruction=system_instruction,
-            generation_config=gen_config,
+        # Note: We pass response_mime_type="application/json" without passing
+        # schema_cls directly to response_schema because Google's protobuf Schema
+        # parser crashes on Pydantic v2 schemas with field defaults:
+        # "ValueError: Protocol message Schema has no 'default' field".
+        # The JSON output is strictly validated against schema_cls via model_validate.
+        gen_config = self.genai.GenerationConfig(
+            response_mime_type="application/json",
+            temperature=temp,
         )
+
+        try:
+            model = self.genai.GenerativeModel(
+                model_name=self.model_name,
+                system_instruction=system_instruction,
+                generation_config=gen_config,
+            )
+        except Exception as model_err:
+            logger.error(f"[{self.model_name}] Failed to initialize GenerativeModel: {model_err}")
+            self._classify_and_raise_error(model_err)
+            raise
 
         last_error: Optional[Exception] = None
         current_prompt = prompt
@@ -306,11 +340,11 @@ class GeminiLLMClient:
                     f"[{self.model_name}] Output validation failed on attempt {attempt}: {parse_err}"
                 )
 
-                if attempt == max_retries:
+                if attempt >= max_retries:
                     break
 
-                # Backoff before retrying
-                delay = 0.5 * (2 ** (attempt - 1)) + random.uniform(0.1, 0.4)
+                # Backoff before retrying (1.0s, 2.0s...)
+                delay = 1.0 * attempt + random.uniform(0.1, 0.4)
                 time.sleep(delay)
 
                 # Feed back error details into prompt for the next attempt
@@ -327,10 +361,33 @@ class GeminiLLMClient:
             except Exception as api_err:
                 last_error = api_err
                 err_str = str(api_err).lower()
-                is_rate_limit = "429" in err_str or "resourceexhausted" in type(api_err).__name__.lower() or "quota" in err_str
+                err_type = type(api_err).__name__.lower()
+
+                # Fail fast on non-retryable errors
+                is_auth = (
+                    "api_key" in err_str
+                    or "api key" in err_str
+                    or "401" in err_str
+                    or "403" in err_str
+                    or "permissiondenied" in err_type
+                    or "permission_denied" in err_str
+                    or "unauthenticated" in err_str
+                )
+                is_safety = "safety" in err_str or "blocked" in err_str or "harm" in err_str
+                is_invalid_model = "not found" in err_str or "invalid argument" in err_str
+
+                if is_auth or is_safety or is_invalid_model:
+                    self._classify_and_raise_error(api_err)
+
+                is_rate_limit = (
+                    "429" in err_str
+                    or "resourceexhausted" in err_type
+                    or "resource_exhausted" in err_str
+                    or "quota" in err_str
+                )
 
                 if is_rate_limit and attempt < max_retries:
-                    delay = 2.0 * (2 ** (attempt - 1)) + random.uniform(0.5, 1.5)
+                    delay = 2.0 * attempt + random.uniform(0.5, 1.0)
                     logger.warning(f"Rate limited (429). Backing off for {delay:.2f}s before retry {attempt+1}...")
                     time.sleep(delay)
                     continue
@@ -338,9 +395,17 @@ class GeminiLLMClient:
                 logger.warning(
                     f"[{self.model_name}] API call failed on attempt {attempt}: {api_err}"
                 )
-                if attempt == max_retries:
+                if attempt >= max_retries:
                     self._classify_and_raise_error(api_err)
 
+        if isinstance(last_error, (json.JSONDecodeError, ValidationError)):
+            raise LLMInvalidOutputError(
+                f"Failed to generate valid {schema_cls.__name__} after {max_retries} attempts. Last error: {last_error}"
+            ) from last_error
+
+        if last_error:
+            self._classify_and_raise_error(last_error)
+
         raise LLMValidationError(
-            f"Failed to generate valid {schema_cls.__name__} after {max_retries} attempts. Last error: {last_error}"
-        ) from last_error
+            f"Failed to generate valid {schema_cls.__name__} after {max_retries} attempts."
+        )
