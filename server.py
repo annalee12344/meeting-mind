@@ -499,8 +499,19 @@ app.include_router(v1_router)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Legacy / Backward-Compatible Endpoints (/api/...)
+# Root & Legacy / Backward-Compatible Endpoints (/api/...)
 # ─────────────────────────────────────────────────────────────────────────────
+
+@app.get("/")
+def root_index() -> Dict[str, str]:
+    return {
+        "status": "ok",
+        "service": "Meeting Mind API",
+        "version": "2.0.0",
+        "health": "/api/v1/health",
+        "docs": "/docs",
+    }
+
 
 @app.get("/api/health", response_model=HealthResponse)
 def legacy_health_check() -> HealthResponse:
