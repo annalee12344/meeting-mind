@@ -52,9 +52,9 @@ RE_TIMESTAMP_ONLY_NOBRACKETS = re.compile(
     r"^(?P<timestamp>\d{1,2}:\d{2}(?::\d{2})?)\s*[-–—]?\s*(?P<text>.+)$"
 )
 
-# Format 7: Speaker: Text (without timestamp, speaker cannot start with bracket or digits)
+# Format 7: Speaker: Text (without timestamp, speaker must start with a letter)
 RE_SPEAKER_ONLY = re.compile(
-    r"^(?P<speaker>[^:.\n\[]{1,60})\s*:\s*(?P<text>.+)$"
+    r"^(?P<speaker>[A-Za-zÀ-ỹ][^:.\n\[]{0,59})\s*:\s*(?P<text>.+)$"
 )
 
 # Format 8: Speaker - Text (without timestamp, speaker followed by space-hyphen-space)
